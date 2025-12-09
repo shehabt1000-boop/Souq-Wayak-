@@ -17,8 +17,15 @@
     <!-- Styles -->
     <style>
         body { font-family: 'Cairo', sans-serif; background-color: #000; overflow-x: hidden; }
-        .glass-nav { background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255, 255, 255, 0.1); z-index: 50; }
-        .mobile-menu { transition: transform 0.3s ease-out; transform: translateX(-100%); left: 0; right: auto; }
+        .glass-nav { background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.1); z-index: 50; }
+        
+        /* Mobile Menu Animation (From Left) */
+        .mobile-menu { 
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            transform: translateX(-100%); /* يبدأ مخفياً لليسار */
+            left: 0; 
+            right: auto; 
+        }
         .mobile-menu.open { transform: translateX(0); }
         
         /* Custom Scrollbar */
@@ -31,28 +38,10 @@
         .ltr { direction: ltr; }
         
         /* Marquee Animation */
-        .marquee-wrapper {
-            overflow: hidden;
-            width: 100%;
-            position: relative;
-            mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
-        }
-        .marquee-content {
-            display: flex;
-            width: max-content;
-            animation: scrollLeft 40s linear infinite;
-        }
+        .marquee-wrapper { overflow: hidden; width: 100%; position: relative; mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent); }
+        .marquee-content { display: flex; width: max-content; animation: scrollLeft 40s linear infinite; }
         .marquee-wrapper:hover .marquee-content { animation-play-state: paused; }
-        
-        @keyframes scrollLeft {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(50%); }
-        }
-
-        /* Modal Transitions */
-        .modal-enter { opacity: 0; transform: scale(0.95); }
-        .modal-enter-active { opacity: 1; transform: scale(1); transition: opacity 300ms, transform 300ms; }
-        .modal-exit { opacity: 0; transform: scale(0.95); transition: opacity 200ms, transform 200ms; }
+        @keyframes scrollLeft { 0% { transform: translateX(0); } 100% { transform: translateX(50%); } }
     </style>
     
     <!-- Firebase & Logic -->
@@ -63,7 +52,7 @@
         
         // ** Settings **
         const COMPANY_NAME = "Wolf TraVal";
-        const ADMIN_UID = "GOMXxizbZEPRztWWzigk8CZNpvf2"; // UID الخاص بك
+        const ADMIN_UID = "GOMXxizbZEPRztWWzigk8CZNpvf2"; 
         const DEFAULT_PHONE = "201206244875"; 
         const FB_PAGE = "https://www.facebook.com/share/1EwRcGeCDs/"; 
         const CLOUD_NAME = "db9h7zm1h"; 
@@ -75,10 +64,8 @@
         let bannerData = [];
         let db, auth; 
         let isEditing = false, editTripId = null, oldImageUrl = '';
-        
-        // متغيرات لعمليات الحذف والحجز
-        let pendingDelete = null; // {id, title, type}
-        let currentBookingTrip = null; // {title, code, price, phone}
+        let pendingDelete = null; 
+        let currentBookingTrip = null;
 
         const firebaseConfig = {
           apiKey: "AIzaSyCTo8DhvaAmNtV9OIgY5eLOeVgF7iQqlYk",
@@ -93,7 +80,6 @@
         const tripsPath = `artifacts/${firebaseConfig.projectId}/public/data/trips`; 
         const bannerPath = `artifacts/${firebaseConfig.projectId}/public/data/banner`; 
 
-        // --- Notifications ---
         window.showNotification = function(msg, type) {
             const notif = document.createElement('div');
             notif.className = `fixed top-24 left-1/2 -translate-x-1/2 px-6 py-3 rounded-xl text-white shadow-2xl z-[150] transition-all duration-500 opacity-0 transform translate-y-[-20px] ${type === 'error' ? 'bg-red-600/90' : type === 'success' ? 'bg-green-600/90' : 'bg-gray-700/90'} backdrop-blur-md border border-white/10`;
@@ -103,30 +89,23 @@
             setTimeout(() => { notif.classList.add('opacity-0', 'translate-y-[-20px]'); setTimeout(() => notif.remove(), 500); }, 4000);
         }
 
-        // --- Cloudinary ---
         async function uploadToCloudinary(file) {
             const formData = new FormData();
             formData.append('file', file);
             formData.append('upload_preset', UPLOAD_PRESET);
             try {
                 const response = await fetch(CLOUDINARY_URL, { method: 'POST', body: formData });
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error.message);
-                }
+                if (!response.ok) throw new Error("فشل الرفع");
                 const data = await response.json();
                 return data.secure_url; 
             } catch (error) { console.error(error); throw error; }
         }
 
-        // --- Auth Logic ---
         window.toggleLoginModal = function() {
             const modal = document.getElementById('loginModal');
             modal.classList.toggle('hidden'); modal.classList.toggle('flex');
             document.getElementById('loginForm').reset();
-            // إغلاق القائمة الجانبية إذا كانت مفتوحة
             document.getElementById('mobile-menu').classList.remove('open'); 
-            document.getElementById('mobile-menu').classList.add('hidden');
         }
 
         window.handleLogin = async function(e) {
@@ -147,11 +126,9 @@
                 await signOut(auth);
                 showNotification("تم تسجيل الخروج", "success");
                 document.getElementById('mobile-menu').classList.remove('open'); 
-                document.getElementById('mobile-menu').classList.add('hidden');
             } catch (error) { console.error(error); }
         }
 
-        // --- Init ---
         async function initApp() {
             const app = initializeApp(firebaseConfig);
             db = getFirestore(app);
@@ -174,31 +151,49 @@
             document.getElementById('mobile-menu').style.top = `${document.querySelector('.glass-nav').offsetHeight}px`;
             document.getElementById('companyName').textContent = COMPANY_NAME;
             document.getElementById('footerCompanyName').textContent = COMPANY_NAME;
-            
             document.querySelectorAll('.fb-link').forEach(l => l.href = FB_PAGE);
             document.querySelectorAll('.wa-link').forEach(l => l.href = `https://wa.me/${DEFAULT_PHONE}`);
         }
 
         function updateUIForAdmin(isLoggedIn) {
-            const adminBtns = document.querySelectorAll('.admin-btn');
-            // أزرار القائمة الجانبية
-            const loginBtnMobile = document.getElementById('mobileLoginBtn');
-            const logoutBtnMobile = document.getElementById('mobileLogoutBtn');
+            // Desktop (Explicit logic)
+            const desktopAdminGroup = document.getElementById('desktopAdminGroup');
+            const desktopLoginIcon = document.getElementById('desktopLoginIcon');
+            
+            // Mobile (Explicit logic)
+            const mobileLoginBtn = document.getElementById('mobileLoginBtn');
+            const mobileLogoutBtn = document.getElementById('mobileLogoutBtn');
+            const mobileAdminActions = document.getElementById('mobileAdminActions');
 
             if (isLoggedIn) {
-                adminBtns.forEach(el => { el.classList.remove('hidden'); el.classList.add('flex'); });
-                if(loginBtnMobile) loginBtnMobile.classList.add('hidden');
-                if(logoutBtnMobile) logoutBtnMobile.classList.remove('hidden');
+                // Desktop: Show Admin Group, Hide Lock Icon
+                desktopAdminGroup.classList.remove('hidden');
+                desktopAdminGroup.classList.add('flex'); // Only flex if MD is active (handled by CSS class hidden md:flex usually, but here we toggle hidden)
+                
+                desktopLoginIcon.classList.add('hidden');
+                
+                // Mobile: Hide Login, Show Logout & Actions
+                mobileLoginBtn.classList.add('hidden');
+                mobileLogoutBtn.classList.remove('hidden');
+                mobileAdminActions.classList.remove('hidden');
+                mobileAdminActions.classList.add('grid');
             } else {
-                adminBtns.forEach(el => { el.classList.add('hidden'); el.classList.remove('flex'); });
-                if(loginBtnMobile) loginBtnMobile.classList.remove('hidden');
-                if(logoutBtnMobile) logoutBtnMobile.classList.add('hidden');
+                // Desktop: Hide Admin Group, Show Lock Icon
+                desktopAdminGroup.classList.add('hidden');
+                desktopAdminGroup.classList.remove('flex');
+                
+                desktopLoginIcon.classList.remove('hidden');
+
+                // Mobile: Show Login, Hide Logout & Actions
+                mobileLoginBtn.classList.remove('hidden');
+                mobileLogoutBtn.classList.add('hidden');
+                mobileAdminActions.classList.add('hidden');
+                mobileAdminActions.classList.remove('grid');
             }
             renderTrips(tripsData);
             renderBanner(bannerData);
         }
         
-        // --- Listeners ---
         function listenForTrips() {
             const q = query(collection(db, tripsPath), orderBy("createdAt", "desc")); 
             onSnapshot(q, (snapshot) => {
@@ -217,7 +212,6 @@
             });
         }
         
-        // --- Render Functions ---
         function renderBanner(images) {
             const track = document.getElementById('marquee-track');
             if (images.length === 0) { track.innerHTML = ''; return; }
@@ -237,10 +231,8 @@
                 const card = document.createElement('div');
                 card.className = "w-full max-w-sm mx-auto bg-gray-900/90 border border-gray-700 rounded-2xl overflow-hidden shadow-xl shadow-teal-500/20 transition-all duration-300 transform group hover:-translate-y-1";
                 const imageUrl = trip.mainImageUrl || 'https://via.placeholder.com/400x300';
-                
-                // تحديد رقم الهاتف الخاص بالرحلة أو الافتراضي
                 const tripPhone = trip.whatsappPhone || DEFAULT_PHONE;
-
+                
                 let remainingTime = '', isExpired = false;
                 if (trip.departureDate) {
                     const diffMs = new Date(trip.departureDate) - new Date();
@@ -288,10 +280,9 @@
              catch { showNotification("فشل النسخ", "error"); }
         }
 
-        // --- Custom Delete Modal Logic ---
         window.confirmDelete = function(id, title, type) {
             pendingDelete = { id, title, type };
-            document.getElementById('deleteMessage').textContent = `هل أنت متأكد من حذف ${title}؟ لا يمكن التراجع عن هذا الإجراء.`;
+            document.getElementById('deleteMessage').textContent = `هل أنت متأكد من حذف ${title}؟`;
             const modal = document.getElementById('deleteModal');
             modal.classList.remove('hidden'); modal.classList.add('flex');
         }
@@ -299,13 +290,12 @@
         window.executeDelete = async function() {
             if (!pendingDelete || !isAdmin) return;
             const btn = document.getElementById('confirmDeleteBtn');
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> حذف...';
-            
+            btn.innerHTML = 'حذف...';
             try {
                 const path = pendingDelete.type === 'trip' ? tripsPath : bannerPath;
                 await deleteDoc(doc(db, path, pendingDelete.id));
                 showNotification("تم الحذف بنجاح", "success");
-            } catch (e) { console.error(e); showNotification("فشل الحذف", "error"); }
+            } catch (e) { showNotification("فشل الحذف", "error"); }
             finally {
                 window.closeDeleteModal();
                 btn.innerHTML = 'نعم، حذف';
@@ -318,7 +308,6 @@
             pendingDelete = null;
         }
 
-        // --- Booking System Logic ---
         window.openBookingOptions = function(title, code, price, phone) {
             currentBookingTrip = { title, code, price, phone };
             const modal = document.getElementById('bookingOptionsModal');
@@ -338,13 +327,11 @@
         }
 
         window.openBookingForm = function() {
-            closeBookingOptions(); // Close options modal
-            // Setup Form Modal
+            closeBookingOptions(); 
             document.getElementById('formTripTitle').value = currentBookingTrip.title;
             document.getElementById('formTripPrice').value = currentBookingTrip.price;
             document.getElementById('formCount').value = 1;
             updateTotalPrice();
-            
             const modal = document.getElementById('bookingFormModal');
             modal.classList.remove('hidden'); modal.classList.add('flex');
         }
@@ -367,14 +354,11 @@
             const clientPhone = document.getElementById('clientPhone').value;
             const count = document.getElementById('formCount').value;
             const total = document.getElementById('formTotal').textContent;
-
             const msg = `*طلب حجز جديد 🎫*\n\n👤 الاسم: ${name}\n📱 الهاتف: ${clientPhone}\n🌍 الرحلة: ${currentBookingTrip.title}\n🔢 العدد: ${count} أفراد\n💰 الإجمالي: ${total}\n\nيرجى تأكيد الحجز.`;
-            
             window.open(`https://wa.me/${currentBookingTrip.phone}?text=${encodeURIComponent(msg)}`, '_blank');
             closeBookingForm();
         }
 
-        // --- CRUD Operations ---
         window.toggleTripStatus = async function(tripId, newStatus) {
             if (!isAdmin) return;
             await setDoc(doc(db, tripsPath, tripId), { status: newStatus }, { merge: true });
@@ -385,16 +369,14 @@
             if (!isAdmin) return;
             const trip = tripsData.find(t => t.id === id);
             isEditing = true; editTripId = id; oldImageUrl = trip.mainImageUrl || '';
-            
             const modal = document.getElementById('addTripModal');
             modal.classList.remove('hidden'); modal.classList.add('flex');
             document.getElementById('modalTitle').textContent = "تعديل الرحلة";
             document.getElementById('submitBtn').innerHTML = `<i class="fas fa-save ml-1"></i> حفظ التعديلات`;
-            
             document.getElementById('tripTitle').value = trip.title;
             document.getElementById('tripLocation').value = trip.location;
             document.getElementById('tripPrice').value = trip.price;
-            document.getElementById('tripPhone').value = trip.whatsappPhone || ''; // الهاتف
+            document.getElementById('tripPhone').value = trip.whatsappPhone || ''; 
             document.getElementById('departureDate').value = trip.departureDate;
             document.getElementById('availableSeats').value = trip.availableSeats;
             document.getElementById('tripDesc').value = trip.description;
@@ -410,7 +392,7 @@
             const title = document.getElementById('tripTitle').value;
             const price = document.getElementById('tripPrice').value;
             const location = document.getElementById('tripLocation').value;
-            const whatsappPhone = document.getElementById('tripPhone').value; // رقم الهاتف الجديد
+            const whatsappPhone = document.getElementById('tripPhone').value; 
             const description = document.getElementById('tripDesc').value;
             const departureDate = document.getElementById('departureDate').value;
             const availableSeats = parseInt(document.getElementById('availableSeats').value) || 0;
@@ -429,23 +411,17 @@
             }
 
             try {
-                const tripData = { 
-                    title, price, location, whatsappPhone, description, 
-                    departureDate, availableSeats, durationText, mainImageUrl 
-                };
-
+                const tripData = { title, price, location, whatsappPhone, description, departureDate, availableSeats, durationText, mainImageUrl };
                 if (isEditing) {
                     await updateDoc(doc(db, tripsPath, editTripId), tripData);
                     showNotification("تم التعديل بنجاح", "success");
                 } else {
                     const code = 'TRIP-' + Math.floor(1000 + Math.random() * 9000);
-                    await addDoc(collection(db, tripsPath), { 
-                        ...tripData, code, status: 'active', createdAt: Timestamp.now() 
-                    });
+                    await addDoc(collection(db, tripsPath), { ...tripData, code, status: 'active', createdAt: Timestamp.now() });
                     showNotification("تمت الإضافة بنجاح", "success");
                 }
                 closeTripModal();
-            } catch (error) { console.error(error); showNotification("خطأ في الحفظ", "error"); } 
+            } catch (error) { showNotification("خطأ في الحفظ", "error"); } 
             finally { btn.innerHTML = originalText; btn.disabled = false; }
         }
 
@@ -454,10 +430,8 @@
             if (!isAdmin) return;
             const btn = document.getElementById('bannerSubmitBtn');
             const files = document.getElementById('bannerFiles').files;
-            
             if (files.length === 0) { showNotification("اختر صوراً أولاً", "error"); return; }
             btn.innerHTML = `جاري الرفع...`; btn.disabled = true;
-
             try {
                 const uploadPromises = Array.from(files).map(file => uploadToCloudinary(file));
                 const urls = await Promise.all(uploadPromises);
@@ -469,7 +443,6 @@
             finally { btn.innerHTML = "تأكيد النشر"; btn.disabled = false; }
         }
         
-        // --- Modals Toggle ---
         window.toggleTripModal = function() {
             if (!isAdmin) return;
             isEditing = false; editTripId = null; oldImageUrl = '';
@@ -486,7 +459,6 @@
             document.getElementById('addBannerForm').reset();
             document.getElementById('bannerPreview').innerHTML = '';
         }
-        
         window.previewBannerImages = function(event) {
             const container = document.getElementById('bannerPreview');
             container.innerHTML = '';
@@ -504,10 +476,12 @@
                 });
             }
         }
-
         window.closeTripModal = function() { document.getElementById('addTripModal').classList.add('hidden'); document.getElementById('addTripModal').classList.remove('flex'); isEditing = false; }
         window.closeBannerModal = function() { document.getElementById('addBannerModal').classList.add('hidden'); document.getElementById('addBannerModal').classList.remove('flex'); }
-        window.toggleMobileMenu = function() { const menu = document.getElementById('mobile-menu'); menu.classList.toggle('open'); menu.classList.toggle('hidden'); }
+        window.toggleMobileMenu = function() { 
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('open');
+        }
         window.toggleCustomInput = function(selectId, customId) {
             const el = document.getElementById(customId);
             document.getElementById(selectId).value === 'other' ? (el.classList.remove('hidden'), el.required=true) : (el.classList.add('hidden'), el.required=false);
@@ -517,76 +491,87 @@
 </head>
 <body class="bg-gray-900 min-h-screen relative text-gray-100 selection:bg-teal-500 selection:text-white">
 
-    <!-- Background -->
     <div class="fixed inset-0 z-0">
-        <img src="https://images.pexels.com/photos/2559941/pexels-photo-2559941.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" class="w-full h-full object-cover">
-        <div class="absolute inset-0 bg-black/70 backdrop-blur-[2px]"></div> 
+        <!-- Removed overlay filter as requested -->
+        <img src="https://images.pexels.com/photos/2559941/pexels-photo-2559941.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" class="w-full h-full object-cover opacity-70">
+        <!-- No black blur overlay here anymore -->
     </div>
 
     <div class="relative z-10 flex flex-col min-h-screen">
         
         <!-- Navbar -->
-        <nav class="glass-nav sticky top-0">
-            <div class="container mx-auto px-4 md:px-6 py-4 flex justify-between items-center">
+        <nav class="glass-nav sticky top-0 w-full">
+            <div class="container mx-auto px-4 md:px-6 py-4 flex justify-between items-center relative">
                 
-                <div class="flex items-center gap-4">
-                    <button onclick="window.location.reload()" class="text-xl md:text-2xl font-black text-white flex items-center gap-2 hover:text-teal-400">
-                        <i class="fas fa-plane-departure text-teal-400"></i> <span id="companyName">Wolf TraVal</span>
-                    </button>
-                    <!-- Small Lock Icon for Desktop Login (Optional) -->
-                    <button onclick="toggleLoginModal()" class="hidden md:block text-gray-500 hover:text-white transition-colors" title="دخول الإدارة">
-                        <i class="fas fa-lock"></i>
-                    </button>
-                </div>
+                <!-- Right: Logo -->
+                <button onclick="window.location.reload()" class="text-xl md:text-2xl font-black text-white flex items-center gap-2 hover:text-teal-400">
+                    <i class="fas fa-plane-departure text-teal-400"></i> <span id="companyName">Wolf TraVal</span>
+                </button>
 
-                <div class="hidden md:flex items-center gap-6 text-sm font-semibold">
+                <!-- Center: Desktop Links -->
+                <div class="hidden md:flex items-center gap-6 text-sm font-semibold absolute left-1/2 transform -translate-x-1/2">
                     <a href="#" class="hover:text-teal-400">الرئيسية</a>
                     <a href="#trips-section" class="hover:text-teal-400">الرحلات</a>
                     <a href="#" target="_blank" class="hover:text-teal-400 fb-link">فيسبوك</a>
                 </div>
                 
-                <!-- Admin Buttons Cluster (Desktop) -->
-                <div class="hidden md:flex items-center gap-2">
-                    <button onclick="toggleBannerModal()" class="admin-btn hidden bg-white/5 hover:bg-white/10 border border-white/10 text-white px-3 py-1.5 rounded-lg text-xs flex items-center gap-2 backdrop-blur-md transition-all">
-                        <i class="fas fa-images text-teal-400"></i> المعرض
+                <!-- Left: Admin Controls -->
+                <div class="flex items-center gap-3">
+                    <!-- Desktop Login Icon -->
+                    <button id="desktopLoginIcon" onclick="toggleLoginModal()" class="hidden md:block text-gray-400 hover:text-white transition-colors" title="دخول الإدارة">
+                        <i class="fas fa-lock"></i>
                     </button>
-                    <button onclick="toggleTripModal()" class="admin-btn hidden bg-white/5 hover:bg-white/10 border border-white/10 text-white px-3 py-1.5 rounded-lg text-xs flex items-center gap-2 backdrop-blur-md transition-all">
-                        <i class="fas fa-plus text-teal-400"></i> رحلة
-                    </button>
-                </div>
-                
-                <div class="md:hidden">
-                     <button onclick="toggleMobileMenu()" class="text-white text-xl"><i class="fas fa-bars"></i></button>
+
+                    <!-- Desktop Admin Action Buttons -->
+                    <div id="desktopAdminGroup" class="hidden flex items-center gap-2">
+                         <button onclick="toggleBannerModal()" class="bg-white/5 hover:bg-white/10 border border-white/10 text-white px-3 py-1.5 rounded-lg text-xs flex items-center gap-2 backdrop-blur-md transition-all">
+                            <i class="fas fa-images text-teal-400"></i> المعرض
+                        </button>
+                        <button onclick="toggleTripModal()" class="bg-white/5 hover:bg-white/10 border border-white/10 text-white px-3 py-1.5 rounded-lg text-xs flex items-center gap-2 backdrop-blur-md transition-all">
+                            <i class="fas fa-plus text-teal-400"></i> رحلة
+                        </button>
+                        <button onclick="handleLogout()" class="text-red-400 hover:text-red-300 text-xs px-2"><i class="fas fa-sign-out-alt"></i></button>
+                    </div>
+
+                    <!-- Mobile Toggle -->
+                    <div class="md:hidden">
+                        <button onclick="toggleMobileMenu()" class="text-white text-xl p-2"><i class="fas fa-bars"></i></button>
+                    </div>
                 </div>
             </div>
         </nav>
         
-        <!-- Mobile Menu (Sidebar) -->
-        <div id="mobile-menu" class="mobile-menu hidden fixed w-4/5 md:w-1/3 bg-gray-900/95 backdrop-blur-md z-40 p-6 shadow-2xl md:hidden flex flex-col h-full border-l border-gray-700">
-            <div class="flex justify-between items-center mb-8">
-                <span class="text-xl font-bold text-white">القائمة</span>
-                <button onclick="toggleMobileMenu()" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
+        <!-- Mobile Menu (Sidebar) - Now slides from LEFT -->
+        <div id="mobile-menu" class="mobile-menu fixed top-0 w-64 h-auto min-h-[50vh] bg-gray-900/95 backdrop-blur-xl z-50 p-5 shadow-2xl md:hidden flex flex-col gap-6 rounded-br-2xl border-r border-b border-gray-700">
+            <div class="flex justify-between items-center border-b border-gray-700 pb-4">
+                <span class="text-lg font-bold text-white">القائمة</span>
+                <button onclick="toggleMobileMenu()" class="text-gray-400 hover:text-white w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-800"><i class="fas fa-times"></i></button>
             </div>
-            <nav class="flex flex-col space-y-4 text-lg mb-auto">
-                <a href="#" class="text-gray-200 hover:text-teal-400 border-b border-gray-700 pb-2" onclick="toggleMobileMenu()">الرئيسية</a>
-                <a href="#trips-section" class="text-gray-200 hover:text-teal-400 border-b border-gray-700 pb-2" onclick="toggleMobileMenu()">الرحلات</a>
-                <a href="#" target="_blank" class="text-gray-200 hover:text-teal-400 pb-2 fb-link" onclick="toggleMobileMenu()">فيسبوك</a>
+            
+            <nav class="flex flex-col space-y-4 text-base font-semibold">
+                <a href="#" class="text-gray-300 hover:text-teal-400 flex items-center gap-3" onclick="toggleMobileMenu()"><i class="fas fa-home w-5 text-center"></i> الرئيسية</a>
+                <a href="#trips-section" class="text-gray-300 hover:text-teal-400 flex items-center gap-3" onclick="toggleMobileMenu()"><i class="fas fa-plane w-5 text-center"></i> الرحلات</a>
+                <a href="#" target="_blank" class="text-gray-300 hover:text-teal-400 flex items-center gap-3 fb-link" onclick="toggleMobileMenu()"><i class="fab fa-facebook w-5 text-center"></i> فيسبوك</a>
             </nav>
             
-            <!-- Admin Controls in Sidebar -->
-            <div class="border-t border-gray-700 pt-6">
-                <!-- Login/Logout Buttons -->
-                <button id="mobileLoginBtn" onclick="toggleLoginModal()" class="w-full mb-3 text-gray-300 hover:text-white border border-gray-600 px-3 py-2 rounded-lg transition-colors flex items-center justify-center gap-2">
-                    <i class="fas fa-lock"></i> دخول الإدارة
+            <!-- Mobile Admin Section -->
+            <div class="mt-2 border-t border-gray-700 pt-4">
+                <!-- Login/Logout Mobile -->
+                <button id="mobileLoginBtn" onclick="toggleLoginModal()" class="w-full text-gray-300 hover:text-white border border-gray-600/50 bg-gray-800/50 px-4 py-2.5 rounded-xl transition-all flex items-center gap-3 mb-3">
+                    <i class="fas fa-lock w-5 text-center text-teal-500"></i> <span>دخول الإدارة</span>
                 </button>
-                <button id="mobileLogoutBtn" onclick="handleLogout()" class="hidden w-full mb-3 text-red-400 hover:text-red-300 border border-red-900/50 bg-red-900/20 px-3 py-2 rounded-lg transition-colors flex items-center justify-center gap-2">
-                    <i class="fas fa-sign-out-alt"></i> خروج
+                <button id="mobileLogoutBtn" onclick="handleLogout()" class="hidden w-full text-red-400 hover:text-red-300 border border-red-900/30 bg-red-900/10 px-4 py-2.5 rounded-xl transition-all flex items-center gap-3 mb-3">
+                    <i class="fas fa-sign-out-alt w-5 text-center"></i> <span>خروج</span>
                 </button>
 
-                <!-- Action Buttons -->
-                <div class="grid grid-cols-2 gap-2">
-                    <button onclick="toggleBannerModal(); toggleMobileMenu();" class="admin-btn hidden justify-center bg-white/10 border border-white/20 text-white py-2 rounded-lg text-xs items-center gap-2 hover:bg-white/20"><i class="fas fa-images"></i> صور</button>
-                    <button onclick="toggleTripModal(); toggleMobileMenu();" class="admin-btn hidden justify-center bg-white/10 border border-white/20 text-white py-2 rounded-lg text-xs items-center gap-2 hover:bg-white/20"><i class="fas fa-plus"></i> رحلة</button>
+                <!-- Admin Actions Mobile (Grid) -->
+                <div id="mobileAdminActions" class="hidden grid-cols-2 gap-3">
+                    <button onclick="toggleBannerModal(); toggleMobileMenu();" class="flex flex-col items-center justify-center bg-teal-900/20 border border-teal-500/30 text-teal-100 py-3 rounded-xl text-xs gap-2 hover:bg-teal-900/40">
+                        <i class="fas fa-images text-lg"></i> إضافة صور
+                    </button>
+                    <button onclick="toggleTripModal(); toggleMobileMenu();" class="flex flex-col items-center justify-center bg-teal-900/20 border border-teal-500/30 text-teal-100 py-3 rounded-xl text-xs gap-2 hover:bg-teal-900/40">
+                        <i class="fas fa-plus text-lg"></i> إضافة رحلة
+                    </button>
                 </div>
             </div>
         </div>
@@ -609,7 +594,8 @@
         </header>
 
         <!-- Trips Grid -->
-        <section id="trips-section" class="py-20 bg-black/30">
+        <!-- Removed bg-black/30 as requested -->
+        <section id="trips-section" class="py-20">
             <div class="container mx-auto px-6">
                 <div class="flex justify-between items-end mb-12">
                     <div>
@@ -635,6 +621,7 @@
 
     </div>
 
+    <!-- Modals (Login, Delete, Booking, Forms) -->
     <!-- 1. Login Modal -->
     <div id="loginModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/80 backdrop-blur-sm p-4">
         <div class="bg-gray-800 border border-teal-500/50 w-full max-w-sm rounded-2xl shadow-2xl p-6 transform transition-all scale-100">
@@ -648,7 +635,7 @@
         </div>
     </div>
 
-    <!-- 2. Delete Confirmation Modal (Stylish) -->
+    <!-- 2. Delete Confirmation Modal -->
     <div id="deleteModal" class="fixed inset-0 z-[200] hidden items-center justify-center bg-black/90 backdrop-blur-sm p-4 transition-opacity">
         <div class="bg-gray-800 border border-red-500/30 w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center transform transition-transform scale-100">
             <div class="w-16 h-16 bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -663,7 +650,7 @@
         </div>
     </div>
 
-    <!-- 3. Booking Options Modal (Inquiry vs Book) -->
+    <!-- 3. Booking Options Modal -->
     <div id="bookingOptionsModal" class="fixed inset-0 z-[200] hidden items-center justify-center bg-black/90 backdrop-blur-sm p-4">
         <div class="bg-gray-800 border border-gray-700 w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center">
             <h3 class="text-xl font-bold text-white mb-6">كيف يمكننا مساعدتك؟</h3>
@@ -709,95 +696,99 @@
                         <input type="number" id="formCount" min="1" value="1" oninput="updateTotalPrice()" required class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-teal-500 text-center">
                     </div>
                 </div>
-                
                 <div class="bg-teal-900/30 border border-teal-500/30 p-4 rounded-xl flex justify-between items-center mt-2">
                     <span class="text-teal-400 font-bold">إجمالي السعر:</span>
                     <span id="formTotal" class="text-white font-black text-xl">0 ج.م</span>
                 </div>
-
                 <button type="submit" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 rounded-xl shadow-lg mt-4">تأكيد وإرسال للواتساب <i class="fab fa-whatsapp mr-1"></i></button>
             </form>
         </div>
     </div>
 
-    <!-- 5. Add/Edit Trip Modal -->
+    <!-- 5. Add/Edit Trip Modal (RESTORED TO ORIGINAL DESIGN + REQUIRED PHONE) -->
     <div id="addTripModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/80 backdrop-blur-sm p-0 md:p-4 overflow-y-auto">
         <div class="bg-gray-800 border border-gray-700 w-full md:max-w-xl md:my-8 rounded-none md:rounded-2xl shadow-2xl overflow-hidden h-full md:h-auto animate-[fadeIn_0.3s_ease-out] flex flex-col">
+            
             <div class="modal-header-fixed p-4 border-b border-gray-700 flex justify-between items-center">
                 <h3 id="modalTitle" class="text-xl font-bold text-white">إضافة رحلة جديدة</h3>
-                <button onclick="closeTripModal()" class="text-gray-400 hover:text-white transition-colors"><i class="fas fa-times text-xl"></i></button>
+                <button onclick="closeTripModal()" class="text-gray-400 hover:text-white transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
             </div>
+            
             <form id="addTripForm" onsubmit="handleTripSubmit(event)" class="p-4 md:p-6 space-y-4 md:space-y-6 overflow-y-auto">
-                <!-- Basic Fields -->
+                <!-- Original Layout Restored -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
                         <label class="block text-sm font-medium text-gray-400 mb-1">عنوان الرحلة</label>
-                        <input type="text" id="tripTitle" required class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500">
+                        <input type="text" id="tripTitle" required class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500" placeholder="مثال: رحلة دهب 4 أيام">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-400 mb-1">المكان</label>
-                        <input type="text" id="tripLocation" required class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500">
+                        <input type="text" id="tripLocation" required class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500" placeholder="مثال: جنوب سيناء">
                     </div>
                 </div>
 
-                <!-- Price & Phone -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
                     <div>
                         <label class="block text-sm font-medium text-gray-400 mb-1">السعر (جنية)</label>
-                        <input type="number" id="tripPrice" required class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500">
+                        <input type="number" id="tripPrice" required class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500" placeholder="3500">
                     </div>
+                     <!-- Phone Field (Mandatory) -->
                     <div>
-                        <label class="block text-sm font-medium text-teal-400 mb-1">رقم واتساب للحجز (اختياري)</label>
-                        <input type="text" id="tripPhone" class="w-full bg-gray-700 border border-teal-500/50 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500 ltr" placeholder="مثال: 201xxxxxxxxx">
-                        <p class="text-[10px] text-gray-500">اتركه فارغاً لاستخدام الرقم الأساسي للشركة</p>
+                        <label class="block text-sm font-medium text-teal-400 mb-1">رقم الحجز</label>
+                        <input type="text" id="tripPhone" required class="w-full bg-gray-700 border border-teal-500/50 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500 ltr" placeholder="01xxxxxxxxx">
                     </div>
-                </div>
-
-                <!-- Date & Seats -->
-                <div class="grid grid-cols-2 gap-3">
                     <div class="col-span-2 lg:col-span-1">
-                        <label class="block text-sm font-medium text-gray-400 mb-1">التاريخ</label>
-                        <input type="datetime-local" id="departureDate" required class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500 ltr">
+                        <label class="block text-sm font-medium text-gray-400 mb-1">تاريخ ووقت الرحلة</label>
+                        <input type="datetime-local" id="departureDate" required class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500 text-left ltr">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-400 mb-1">المقاعد</label>
-                        <input type="number" id="availableSeats" required class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500">
+                        <label class="block text-sm font-medium text-gray-400 mb-1">الأماكن المتاحة</label>
+                        <input type="number" id="availableSeats" required class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500" placeholder="20">
                     </div>
                 </div>
-
-                <!-- Duration -->
+                
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-sm font-medium text-gray-400 mb-1">عدد الليالي</label>
-                        <select id="nightsSelect" onchange="toggleCustomInput('nightsSelect', 'nightsCustom')" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white">
+                        <label class="block text-sm font-medium text-gray-400 mb-1">عدد ليالي الرحلة</label>
+                        <select id="nightsSelect" onchange="toggleCustomInput('nightsSelect', 'nightsCustom')" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500">
                             <option value="1">1 ليلة</option>
+                            <option value="2">2 ليالي</option>
                             <option value="3" selected>3 ليالي</option>
-                            <option value="other">أخرى</option>
+                            <option value="5">5 ليالي</option>
+                            <option value="10">10 ليالي</option>
+                            <option value="other">أخرى (أدخل يدوياً)</option>
                         </select>
-                        <input type="number" id="nightsCustom" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white mt-2 hidden">
+                        <input type="number" id="nightsCustom" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500 mt-2 hidden" placeholder="أدخل العدد يدوياً">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-400 mb-1">عدد الأيام</label>
-                        <select id="daysSelect" onchange="toggleCustomInput('daysSelect', 'daysCustom')" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white">
+                        <label class="block text-sm font-medium text-gray-400 mb-1">عدد أيام الرحلة</label>
+                        <select id="daysSelect" onchange="toggleCustomInput('daysSelect', 'daysCustom')" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500">
                             <option value="1">1 يوم</option>
+                            <option value="2">2 أيام</option>
                             <option value="4" selected>4 أيام</option>
-                            <option value="other">أخرى</option>
+                            <option value="6">6 أيام</option>
+                            <option value="10">10 أيام</option>
+                            <option value="other">أخرى (أدخل يدوياً)</option>
                         </select>
-                         <input type="number" id="daysCustom" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white mt-2 hidden">
+                         <input type="number" id="daysCustom" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500 mt-2 hidden" placeholder="أدخل العدد يدوياً">
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-400 mb-1">الوصف</label>
-                    <textarea id="tripDesc" required rows="3" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"></textarea>
+                    <label class="block text-sm font-medium text-gray-400 mb-1">الوصف التفصيلي</label>
+                    <textarea id="tripDesc" required rows="3" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500" placeholder="تفاصيل البرنامج والمزارات الرئيسية..."></textarea>
                 </div>
 
                 <div class="bg-gray-900 p-4 rounded-xl border border-gray-700">
-                    <h4 class="text-white font-bold mb-3"><i class="fas fa-upload ml-2"></i> صورة الرحلة</h4>
-                    <input type="file" id="tripImageFile" accept="image/*" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white ltr">
+                    <h4 class="text-white font-bold mb-3"><i class="fas fa-upload ml-2"></i> صورة الرحلة (صورة واحدة)</h4>
+                    <input type="file" id="tripImageFile" accept="image/*" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500 text-left ltr">
                 </div>
 
-                <button type="submit" id="submitBtn" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 rounded-lg shadow-lg transition-colors mt-2">حفظ ونشر الرحلة</button>
+                <button type="submit" id="submitBtn" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 rounded-lg shadow-lg transition-colors mt-2">
+                    حفظ ونشر الرحلة
+                </button>
             </form>
         </div>
     </div>
