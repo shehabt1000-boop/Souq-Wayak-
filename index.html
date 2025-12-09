@@ -1,3681 +1,484 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <title>شات شهاب</title>
-
-
-
-
-  <!-- === [!!] الإضافات الجديدة لجعله تطبيقاً [!!] === -->
-
-
-
-
-  <!-- لون شريط المتصفح العلوي (للهاتف) -->
-  <meta name="theme-color" content="#0a3d62">
-
-
-
-
-  <!-- أيقونة التطبيق لأجهزة آبل -->
-  <link rel="apple-touch-icon" href="https://placehold.co/180x180/0a3d62/FFF?text=Chat">
-
-
-
-
-  <!-- ملف Manifest (يخبر المتصفح أن هذا تطبيق) -->
-  <!-- (تم تحويله إلى كود Base64 ليبقى في ملف واحد) -->
-  <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiQ2hhdCBTaGVoYWIiLCJzaG9ydF9uYW1lIjoiQ2hhdCBTaGVoYWIiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiI2Y1ZjVmNSIsInRoZW1lX2NvbG9yIjoiIzBhM2Q2MiIsImRlc2NyaXB0aW9uIjoi2LXZhNmK2LEg2KrYsdioINiR2LPQsCDYrtix06rZhNmLIiwiaWNvbnMiOlt7InNyYyI6Imh0dHBzOi8vcGxhY2Vob2xkLmNvLzE5MngxOTIvMGEzZDYyL0ZGRj90ZXh0PUNoYXQiLCJzaXplcyI6IjE5MngxOTIiLCJ0eXBlIjoiaW1hZ2UvcG5nIn0seyJzcmMiOiJodHRwczovL3BsYWNlaG9sZC5jby81MTJ4NTEyLzBhM2Q2Mi9GRkY/dGV4dD1DaGF0Iiwic2l6ZXMiOiI1MTJ4NTEyIiwidHlwZSI6ImltYWdlL3BuZyJ9XX0=">
-
-
-
-
-  <!-- === نهاية الإضافات الجديدة === -->
-
-
-
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    /* المتغيرات الأساسية للألوان والأحجام */
-    :root {
-      --primary-dark: #0a3d62;
-      --primary-light: #000;
-      --accent-color: #25d366;
-      --danger-color: #c0392b;
-      --wa-sent-bubble-bg: #e1ffc7;
-      --wa-recv-bubble-bg: #ffffff;
-      --background-color: #fafafa;
-      --text-dark: #333;
-      --text-light: #ffffff;
-      --font-size: 12px; /* <--- تم تصغير حجم الخط الأساسي */
-      --bubble-padding: 4px 8px; /* <--- تم تصغير الحشو الداخلي للفقاعات */
-      --main-bg-gradient: linear-gradient(90deg, var(--primary-light), var(--primary-dark));
-      --card-bg-color: #ffffff;
-      --border-color: #eee;
-      --body-bg: #f5f5f5;
-    }
-    * { box-sizing: border-box; }
-    html { 
-      height: 100%; 
-    }
-    /* إعدادات الجسم الأساسية */
-    body {
-      height: 100%;
-      margin: 0;
-      font-family: "Cairo", Arial, sans-serif;
-      background-color: var(--body-bg);
-      display: block; 
-    }
-    /* الحاوية الرئيسية للتطبيق */
-    .chat-container {
-      width: 100%;
-      height: 100%;
-      height: 100dvh; 
-      background: var(--background-color);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      position: relative;
-    }
-    /* الشريط العلوي (العنوان والأيقونة) */
-    .chat-header {
-      display: flex; align-items: center; gap: 10px; padding: 8px;
-      background: var(--main-bg-gradient); color: var(--text-light); position: relative; z-index: 10;
-      flex-shrink: 0;
-    }
-    .chat-header .avatar {
-      width: 36px; /* <--- تصغير */
-      height: 36px; /* <--- تصغير */
-      border-radius: 50%; border: 2px solid var(--text-light); object-fit: cover;
-    }
-    .chat-header .title { margin: 0; font-size: 17px; font-weight: 800; } /* <--- تصغير */
-    .logout-btn {
-      margin-right: auto; padding: 5px 8px; /* <--- تصغير */
-      background: linear-gradient(90deg, #c0392b, #e74c3c);
-      color: var(--text-light); border: none; border-radius: 20px; cursor: pointer;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.25); 
-      font-size: calc(var(--font-size) - 1px); /* <--- تصغير */
-      white-space: nowrap;
-    }
-    /* شريط التنقل (الدردشة، الأعضاء...) */
-    .chat-nav {
-      display: flex; background: var(--main-bg-gradient); position: relative; z-index: 10;
-      flex-shrink: 0;
-    }
-    .nav-btn {
-      flex: 1; padding: 8px 4px; /* <--- تصغير */
-      background: transparent; border: none;
-      color: var(--text-light); 
-      font-size: var(--font-size); 
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-    .nav-btn.active { background: rgba(255,255,255,0.08); }
-    /* حاوية الصفحات المتغيرة */
-    .chat-content { 
-        flex: 1; display: flex; flex-direction: column; min-height: 0; position: relative; 
-    }
-    /* إعدادات الصفحة الافتراضية (مخفية) */
-    .page {
-        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-        display: flex; flex-direction: column; min-height: 0;
-        visibility: hidden; opacity: 0;
-        transition: opacity 0.2s ease-in-out, visibility 0.2s;
-        pointer-events: none;
-    }
-    .page.active {
-        visibility: visible; opacity: 1; z-index: 5;
-        pointer-events: auto;
-    }
-    /* --- تعديل: إضافة تثبيت للخلفية --- */
-    .chat-page {
-      background-size: cover; 
-      background-position: center; 
-      background-repeat: no-repeat;
-      background-attachment: scroll; /* <--- تم تغييرها إلى scroll لتحسين الأداء في الهاتف */
-      background-color: #f0f2f5;
-      transition: background-image 0.3s ease-in-out;
-    }
-    /* حاوية عرض الرسائل */
-    .messages {
-      flex: 1; padding: 8px 6px; /* <--- تصغير الهوامش */
-      overflow-y: auto; display: flex; flex-direction: column;
-      gap: 5px; /* <--- تم تصغير المسافة بين الفقاعات */
-      background-color: transparent;
-    }
-    .load-more-container {
-        display: flex;
-        justify-content: center;
-        padding: 6px; /* <--- تصغير */
-    }
-    .load-more-btn {
-        background: var(--primary-dark);
-        color: var(--text-light);
-        border: none;
-        padding: 6px 12px; /* <--- تصغير */
-        border-radius: 20px;
-        cursor: pointer;
-        font-size: calc(var(--font-size) - 1px); /* <--- تصغير */
-    }
-    .load-more-btn:disabled {
-        background: #999;
-        cursor: not-allowed;
-    }
-    .welcome-message {
-        text-align: center; margin: 15px auto; padding: 8px 12px; /* <--- تصغير */
-        background-color: rgba(255, 255, 255, 0.8); border-radius: 10px; /* <--- تصغير */
-        color: var(--text-dark); max-width: 80%;
-    }
-    /* السطر الخاص بكل رسالة (لتحديد يمين/يسار) */
-    .message-row { display: flex; align-items: flex-end; gap: 6px; /* <--- تصغير */ max-width: 85%; position: relative; }
-    .message-row.sent { align-self: flex-end; flex-direction: row-reverse; }
-    .message-row.recv { align-self: flex-start; flex-direction: row; max-width: 75%; }
-    /* تعديل: تصغير أيقونة المرسل (الخاصة بي) */
-    .chat-avatar { width: 24px; height: 24px; /* <--- تصغير */ border-radius: 50%; object-fit: cover; margin-bottom: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
-
-
-
-
-
-
-
-
-    /* فقاعة الرسالة نفسها (الخلفية والهوامش) */
-    .bubble {
-      padding: var(--bubble-padding); 
-      border-radius: 10px; /* <--- تصغير */
-      line-height: 1.4; /* <--- تصغير */
-      word-wrap: break-word;
-      width: fit-content; 
-      font-size: var(--font-size); 
-      box-shadow: 0 1px 1px rgba(0,0,0,0.1);
-      position: relative; color: var(--text-dark);
-      text-shadow: 0 1px 1px rgba(0,0,0,0.2);
-      transition: padding 0.2s ease-in-out;
-    }
-    .bubble.sent { background: var(--wa-sent-bubble-bg); border-top-right-radius: 0; }
-    .bubble.recv { background: var(--wa-recv-bubble-bg); border: 1px solid var(--border-color); border-top-left-radius: 0; }
-    .bubble-content { display: flex; flex-direction: column; }
-    /* تعديل: تصغير خط اسم المرسل */
-    .bubble-sender {
-      font-size: calc(var(--font-size) - 2px); /* <--- تصغير */
-      font-weight: bold; color: var(--primary-dark);
-      margin-bottom: 1px; /* <--- تصغير */
-      display: flex; align-items: center; gap: 3px; /* <--- تصغير */
-    }
-    /* تنسيق اقتباس الرد داخل الفقاعة */
-    .reply-quote {
-        background-color: rgba(0,0,0,0.05);
-        border-right: 3px solid var(--accent-color);
-        padding: 3px 6px; /* <--- تصغير */
-        margin-bottom: 3px; /* <--- تصغير */
-        border-radius: 3px; /* <--- تصغير */
-        font-size: calc(var(--font-size) - 2px); /* <--- تصغير */
-        max-height: 40px; /* <--- تصغير */
-        overflow: hidden;
-    }
-    .reply-quote-name {
-        font-weight: bold;
-        color: var(--accent-color);
-        margin-bottom: 1px; /* <--- تصغير */
-    }
-    .reply-quote-text {
-        color: #777;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    /* تعديل: تصغير خط وقت الإرسال */
-    .timestamp {
-        font-size: 9px; /* <--- تصغير */
-        color: #667781; text-align: left;
-        margin-top: 3px; /* <--- تصغير */
-        direction: ltr; text-shadow: none;
-    }
-
-
-
-
-    /* === [جديد] تنسيق التفاعلات === */
-    .reactions-container {
-        position: absolute;
-        bottom: -10px; /* يرفعها قليلاً فوق الحافة */
-        right: 0;
-        background: var(--card-bg-color);
-        border-radius: 10px;
-        padding: 1px 4px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-        display: flex;
-        gap: 3px;
-        font-size: 10px;
-        z-index: 2;
-        border: 1px solid var(--border-color);
-    }
-    .reaction-item {
-        display: flex;
-        align-items: center;
-        gap: 1px;
-        padding: 1px 2px;
-        border-radius: 8px;
-        background: rgba(0,0,0,0.05);
-        cursor: pointer;
-    }
-    .reaction-item:hover {
-        background: rgba(0,0,0,0.1);
-    }
-    .reaction-count {
-        font-size: 8px;
-        color: var(--text-dark);
-        font-weight: bold;
-    }
-    /* === نهاية تنسيق التفاعلات === */
-
-
-
-
-    /* الشريط السفلي لإدخال الرسالة */
-    .chat-input {
-      display: flex; align-items: center; gap: 6px; /* <--- تصغير */ padding: 5px; /* <--- تصغير */
-      background: var(--main-bg-gradient); border-top: 1px solid rgba(255,255,255,0.08);
-      direction: ltr; position: relative; z-index: 10; /* <--- [إصلاح المشكلة 2] زيادة الـ z-index */
-      flex-shrink: 0;
-    }
-    /* حاوية اقتباس الرد فوق حقل الإدخال */
-    .reply-quote-container-wrapper {
-        position: absolute;
-        bottom: 100%; /* <--- يرفع الحاوية فوق شريط الإدخال */
-        left: 0;
-        right: 0;
-        z-index: 1; /* <--- يجب أن تكون أقل من شريط الإدخال نفسه */
-        padding: 0 5px; /* <--- هامش من الجانبين */
-        margin-bottom: 3px; /* <--- [إصلاح المشكلة 1] مسافة بسيطة فوق بار الكتابة */
-    }
-    .reply-quote-container {
-        background: var(--card-bg-color);
-        padding: 6px 10px; /* <--- تصغير */
-        border-top-left-radius: 10px; /* <--- تصغير */
-        border-top-right-radius: 10px; /* <--- تصغير */
-        border-bottom: 1px solid var(--border-color);
-        display: flex;
-        align-items: center;
-        gap: 8px; /* <--- تصغير */
-        box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
-        max-height: 45px; /* <--- تصغير الارتفاع الكلي */
-        max-width: 95%; /* <--- تصغير العرض من الجانبين */
-        margin: 0 auto; /* <--- توسيط الحاوية */
-    }
-    .reply-quote-content {
-        flex: 1;
-        border-right: 3px solid var(--primary-dark);
-        padding-right: 6px; /* <--- تصغير */
-        max-height: 35px; /* <--- تصغير */
-        overflow: hidden;
-    }
-    .reply-quote-content .reply-quote-name {
-        font-size: 11px; /* <--- تصغير */
-        font-weight: bold;
-        color: var(--primary-dark);
-        margin-bottom: 1px;
-    }
-    .reply-quote-content .reply-quote-text {
-        font-size: 10px; /* <--- تصغير */
-        color: var(--text-dark);
-    }
-    .reply-quote-close {
-        background: none;
-        border: none;
-        color: var(--danger-color);
-        font-size: 16px; /* <--- تصغير */
-        cursor: pointer;
-        padding: 0;
-        flex-shrink: 0;
-    }
-    /* تعديل: تصغير حقل الإدخال */
-    .msg-input {
-      flex: 1; padding: 7px 10px; /* <--- تصغير */
-      border-radius: 20px; /* <--- تصغير */
-      border: 1px solid #ccc;
-      outline: none; background: var(--text-light); 
-      font-size: var(--font-size); /* <--- تصغير */
-      direction: rtl;
-    }
-    /* تعديل: تصغير زر الإرسال */
-    .send-btn {
-      width: 36px; height: 36px; /* <--- تصغير */
-      border: none; border-radius: 50%; background: var(--accent-color);
-      color: var(--text-light); font-size: 16px; /* <--- تصغير */
-      cursor: pointer; display: flex;
-      align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-    }
-    /* [جديد] زر الإيموجي */
-    .emoji-btn {
-        width: 36px; height: 36px; /* <--- تصغير */
-        border: none; border-radius: 50%; background: #f39c12;
-        color: var(--text-light); font-size: 16px; /* <--- تصغير */
-        cursor: pointer; display: flex;
-        align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-        flex-shrink: 0;
-    }
-
-
-
-
-    /* === [جديد] مؤشر الكتابة === */
-    .typing-indicator {
-        position: absolute;
-        bottom: 100%;
-        left: 0;
-        right: 0;
-        text-align: center;
-        font-size: 10px;
-        color: var(--text-dark);
-        padding: 2px 0;
-        background: rgba(255, 255, 255, 0.8);
-        border-top-left-radius: 5px;
-        border-top-right-radius: 5px;
-        z-index: 1;
-        display: none; /* مخفي افتراضياً */
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    /* === نهاية مؤشر الكتابة === */
-
-
-
-
-    /* تعديل: تقليل الهوامش في الصفحات (الأعضاء، الإعدادات...) */
-    .page-container { flex: 1; display: flex; flex-direction: column; padding: 10px; /* <--- تصغير */ gap: 10px; /* <--- تصغير */ overflow-y: auto; }
-    .search-bar {
-      display: flex; align-items: center; gap: 6px; /* <--- تصغير */ background: var(--card-bg-color); padding: 6px 10px; /* <--- تصغير */
-      border-radius: 20px; /* <--- تصغير */ border: 1px solid #ddd; box-shadow: 0 1px 3px rgba(0,0,0,0.1); direction: rtl;
-    }
-    .search-bar input {
-      flex: 1; border: none; outline: none; background: transparent; 
-      font-size: var(--font-size); 
-      direction: rtl; color: var(--text-dark);
-    }
-    /* قائمة الأعضاء */
-    .members-list { display: flex; flex-direction: column; gap: 6px; } /* <--- تصغير الفجوة */
-    /* --- تعديل: تصغير بطاقة العضو --- */
-    .member-item-wrapper {
-      padding: 1px; /* <--- تصغير */ background-image: var(--main-bg-gradient); border-radius: 12px; /* <--- تصغير الحواف */
-      transition: transform 0.2s;
-      display: flex;
-    }
-    .member-item {
-      display: flex; align-items: center; gap: 8px; /* <--- تصغير */ padding: 6px; /* <--- تصغير الهوامش */
-      background: var(--card-bg-color); border-radius: 10px; /* <--- تصغير الحواف */
-      position: relative; cursor: pointer;
-      flex: 1;
-    }
-    .member-avatar { 
-        width: 36px; height: 36px; /* <--- تصغير الأيقونة */
-        border-radius: 50%; object-fit: cover; 
-        background-color: #e0e0e0;
-        flex-shrink: 0; /* منع التقلص */
-    }
-    /* --- تعديل: لتهيئة عرض معلومات العضو والحالة --- */
-    .member-info { 
-        flex: 1; 
-        display: flex; 
-        flex-direction: column; 
-        justify-content: center;
-        min-width: 0; /* منع تجاوز النص */
-    }
-    .member-name {
-        margin: 0; 
-        font-size: var(--font-size); /* <--- تصغير */
-        font-weight: 600; color: var(--text-dark);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis; /* قص النص الطويل */
-    }
-    /* --- إضافة: تنسيق حالة الاتصال --- */
-    .status-dot {
-        width: 8px; height: 8px; /* <--- تصغير */
-        border-radius: 50%;
-        background-color: #95a5a6; /* Offline (grey) */
-        border: 1px solid var(--card-bg-color);
-        margin-left: 6px; /* <--- تصغير */
-        flex-shrink: 0; 
-        transition: background-color 0.3s ease;
-    }
-    .status-dot.online {
-        background-color: #2ecc71; /* Online (green) */
-    }
-    .member-status {
-        font-size: calc(var(--font-size) - 3px); /* <--- تصغير */
-        color: #777; margin-top: 1px; /* <--- تصغير */
-    }
-    body.dark-mode .member-status {
-        color: #bdc3c7;
-    }
-    /* --- نهاية الإضافة --- */
-
-
-
-
-
-
-
-
-    /* قسم عرض البروفايل (الصورة والاسم) */
-    .card-section {
-      display: flex; flex-direction: column; gap: 6px; /* <--- تصغير */ background: var(--card-bg-color); padding: 10px; /* <--- تصغير */
-      border-radius: 14px; /* <--- تصغير */ box-shadow: 0 2px 6px rgba(0,0,0,0.1); align-items: center;
-    }
-    /* تعديل: تصغير صورة البروفايل */
-    .profile-avatar, .view-profile-avatar {
-      width: 70px; height: 70px; /* <--- تصغير */ border-radius: 50%; border: 3px solid var(--primary-dark); /* <--- تصغير */ object-fit: cover;
-    }
-    /* تعديل: تصغير اسم البروفايل */
-    .profile-name { font-size: 20px; /* <--- تصغير */ font-weight: 700; color: var(--primary-dark); margin: 6px 0 0 0; } /* <--- تصغير */
-    .profile-edit-btn, .form-btn-confirm, .settings-btn-themed {
-      padding: 8px 14px; /* <--- تصغير */ border: none; border-radius: 18px; /* <--- تصغير */ color: var(--text-light);
-      background: var(--main-bg-gradient); cursor: pointer;
-      font-size: var(--font-size); /* <--- تصغير */
-    }
-    /* صفحة تسجيل الدخول / إكمال البروفايل */
-    .auth-page {
-      flex: 1; display: flex; flex-direction: column; justify-content: center;
-      align-items: center; padding: 15px; /* <--- تصغير */ background: var(--body-bg); gap: 15px; /* <--- تصغير */
-      overflow-y: auto;
-    }
-    /* تعديل: تصغير عنوان الصفحة */
-    .auth-title { font-size: 20px; /* <--- تصغير */ font-weight: bold; color: var(--primary-dark); text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
-    /* تعديل: تقليل هوامش بطاقة الدخول */
-    .auth-card {
-      background: var(--card-bg-color); width: 100%; max-width: 320px; /* <--- تصغير */ padding: 15px; /* <--- تصغير */
-      border-radius: 14px; /* <--- تصغير */ box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      display: flex; flex-direction: column; gap: 12px; /* <--- تصغير */
-    }
-    .auth-input-group { display: flex; flex-direction: column; gap: 6px; } /* <--- تصغير */
-    /* تعديل: تصغير حقول الإدخال */
-    .auth-input {
-      width: 100%; padding: 8px; /* <--- تصغير */ border-radius: 10px; /* <--- تصغير */ border: 1px solid #ccc;
-      font-size: var(--font-size); 
-      background-color: var(--card-bg-color); color: var(--text-dark);
-    }
-    .form-btn-cancel { padding: 8px; /* <--- تصغير */ border: none; border-radius: 18px; /* <--- تصغير */ color: var(--primary-dark); background: #eee; cursor: pointer; }
-
-
-
-
-
-
-
-
-    .settings-btn-themed, .form-btn-confirm, .form-btn-cancel {
-        font-size: var(--font-size);
-    }
-
-
-
-
-
-
-
-
-    .form-btn-group { 
-        display: flex; gap: 8px; /* <--- تصغير */ margin-top: 8px; /* <--- تصغير */
-        justify-content: center;
-    }
-
-
-
-
-
-
-
-
-    /* تعديل: تصغير أيقونة التسجيل */
-    .signup-avatar { 
-        width: 60px; height: 60px; /* <--- تصغير */ border-radius: 50%; 
-        object-fit: cover; border: 2px solid var(--primary-dark); 
-        cursor: pointer; 
-    }
-    .avatar-note {
-        font-size: 11px; /* <--- تصغير */ color: #777; margin: 3px 0 0 0; /* <--- تصغير */ text-align: center;
-    }
-
-
-
-
-
-
-
-
-    .error-message { color: var(--danger-color); font-size: 11px; /* <--- تصغير */ text-align: center; margin-top: 6px; /* <--- تصغير */ display: none; }
-    #loadingScreen {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8);
-      display: flex; justify-content: center; align-items: center; z-index: 1000;
-    }
-    .loading-spinner {
-      border: 3px solid rgba(10, 61, 98, 0.2); /* <--- تصغير */ border-top: 3px solid var(--primary-dark); /* <--- تصغير */
-      border-radius: 50%; width: 30px; height: 30px; /* <--- تصغير */ animation: spin 1s linear infinite;
-    }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-
-
-
-
-
-
-
-    /* قسم في صفحة الإعدادات */
-    .settings-section, .profile-details-section {
-        display: flex; flex-direction: column; gap: 6px; /* <--- تصغير */ background: var(--card-bg-color);
-        padding: 10px; /* <--- تصغير */ border-radius: 14px; /* <--- تصغير */ box-shadow: 0 2px 6px rgba(0,0,0,0.1); align-items: stretch;
-    }
-    /* تعديل: تصغير عنوان القسم */
-    .settings-section-title {
-        margin: 0 0 6px 0; /* <--- تصغير */ font-size: 16px; /* <--- تصغير */ font-weight: 700; color: var(--primary-dark);
-        border-bottom: 1px solid var(--border-color); /* <--- تصغير */ padding-bottom: 3px; /* <--- تصغير */
-    }
-    .settings-option, .profile-detail-item {
-        display: flex; flex-wrap: wrap; align-items: center; gap: 10px; /* <--- تصغير */ padding: 6px 0; /* <--- تصغير */ border-bottom: 1px solid var(--border-color);
-    }
-    .settings-option:last-child, .profile-detail-item:last-child { border-bottom: none; }
-    /* تعديل: تصغير خط النصوص */
-    .label { 
-        flex: 1; 
-        font-size: var(--font-size); 
-        color: var(--text-dark); 
-    }
-    .value { 
-        font-size: var(--font-size); 
-        color: var(--primary-dark); font-weight: 600; 
-    }
-    .settings-input-color { width: 30px; height: 30px; /* <--- تصغير */ background-color: transparent; border: none; cursor: pointer; }
-    .settings-input-color::-webkit-color-swatch { border-radius: 50%; border: 1px solid var(--border-color); /* <--- تصغير */ }
-    .gender-select { display: flex; gap: 8px; /* <--- تصغير */ margin-top: 8px; /* <--- تصغير */ justify-content: center; }
-    .gender-option {
-      flex: 1; padding: 8px; /* <--- تصغير */ border: 1px solid #ddd; border-radius: 8px; /* <--- تصغير */
-      text-align: center; cursor: pointer; transition: background 0.3s; color: var(--text-dark);
-    }
-    .gender-option.selected { background: var(--primary-dark); color: var(--text-light); border-color: var(--primary-dark); }
-    .background-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); /* <--- تصغير */ gap: 6px; /* <--- تصغير */ }
-    .background-option {
-        width: 100%; height: 50px; /* <--- تصغير */ border-radius: 6px; /* <--- تصغير */ background-size: cover;
-        background-position: center; cursor: pointer; border: 2px solid transparent;
-        background-color: #eee;
-    }
-    .background-option.selected { border-color: var(--primary-dark); }
-    .toast-notification {
-        position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
-        background-color: var(--accent-color); color: white; padding: 8px 16px; /* <--- تصغير */
-        border-radius: 18px; /* <--- تصغير */ box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        z-index: 2000; font-size: 13px; /* <--- تصغير */ transition: top 0.5s ease-in-out;
-    }
-
-
-
-
-
-
-
-
-    /* --- إصلاح 3: إضافة ستايل لزر الحفظ الصغير --- */
-    .save-btn {
-        padding: 4px 8px; /* <--- تصغير الحشو */
-        font-size: 14px; /* <--- تصغير حجم الأيقونة */
-        min-width: 30px; /* <--- تصغير عرض ثابت */
-        flex-shrink: 0;
-        margin-right: 8px; /* <--- تصغير مسافة من النص */
-    }
-
-
-
-
-
-
-
-
-    /* إعدادات الوضع الليلي */
-    body.dark-mode {
-        --body-bg: #121212;
-        --background-color: #2c3e50; --card-bg-color: #34495e; --text-dark: #ecf0f1;
-        --border-color: #4a627a; --primary-dark: #3498db; --wa-recv-bubble-bg: #34495e;
-        --wa-sent-bubble-bg: #056162;
-    }
-    body.dark-mode .chat-page { background-color: #0b141a; }
-    body.dark-mode .welcome-message { background-color: rgba(0,0,0,0.2); }
-    body.dark-mode .form-btn-cancel { background: #4a627a; color: var(--text-dark); }
-    body.dark-mode .reply-quote-content .reply-quote-text { color: #bdc3c7; }
-
-
-
-
-
-
-
-
-    /* --- تعديل: تصغير النافذة المنبثقة (مودال) --- */
-    .modal-overlay {
-        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.6); display: flex; justify-content: center;
-        align-items: center; z-index: 2000; opacity: 0; visibility: hidden;
-        transition: opacity 0.3s, visibility 0.3s;
-    }
-    .modal-overlay.active { opacity: 1; visibility: visible; }
-    .modal-content {
-        background: var(--card-bg-color); padding: 14px; /* <--- تصغير الهوامش */
-        border-radius: 14px; /* <--- تصغير */
-        box-shadow: 0 5px 15px rgba(0,0,0,0.3); text-align: center;
-        max-width: 90%; width: 260px; /* <--- تصغير العرض */
-    }
-    .modal-title { 
-        margin: 0 0 8px 0; /* <--- تصغير الخط والهامش */ font-size: 15px; 
-        font-weight: 700; color: var(--primary-dark); 
-    }
-    .modal-body { 
-        margin-bottom: 14px; color: var(--text-dark); /* <--- تصغير */
-        font-size: 12px; /* <--- تصغير الخط */
-    }
-    .modal-buttons { display: flex; gap: 8px; /* <--- تصغير */ justify-content: center; }
-    /* تصغير أزرار المودال */
-    .modal-buttons .form-btn-cancel,
-    .modal-buttons .form-btn-confirm,
-    #memberActionModal .settings-btn-themed,
-    #messageActionModal .settings-btn-themed {
-        padding: 6px 12px; /* <--- تصغير */
-        font-size: 12px; /* <--- تصغير */
-    }
-    /* تنسيق خاص لمودال تعديل الرسالة */
-    #editMessageModal .modal-content {
-        width: 90%;
-        max-width: 350px; /* <--- تصغير */
-        text-align: right;
-    }
-    #editMessageModal textarea {
-        width: 100%;
-        min-height: 60px; /* <--- تصغير */
-        padding: 8px; /* <--- تصغير */
-        border-radius: 6px; /* <--- تصغير */
-        border: 1px solid #ccc;
-        resize: vertical;
-        font-size: 13px; /* <--- تصغير */
-        direction: rtl;
-        margin-bottom: 8px; /* <--- تصغير */
-    }
-
-
-
-
-    /* === [جديد] مودال التفاعلات === */
-    #reactionModal .modal-content {
-        width: auto;
-        max-width: 300px;
-        padding: 10px;
-    }
-    .reaction-grid {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        justify-content: center;
-    }
-    .reaction-emoji-btn {
-        background: none;
-        border: none;
-        font-size: 24px;
-        cursor: pointer;
-        padding: 5px;
-        border-radius: 8px;
-        transition: background-color 0.1s;
-    }
-    .reaction-emoji-btn:hover {
-        background-color: rgba(0,0,0,0.1);
-    }
-    /* === نهاية مودال التفاعلات === */
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wolf TraVal | للسياحة والترفيه</title>
     
-    /* [جديد] مودال اختيار الإيموجي */
-    #emojiPickerModal .modal-content {
-        width: 90%;
-        max-width: 350px;
-        padding: 10px;
-    }
-    .emoji-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(30px, 1fr));
-        gap: 5px;
-        max-height: 250px;
-        overflow-y: auto;
-        padding: 5px;
-    }
-    .emoji-item {
-        font-size: 24px;
-        cursor: pointer;
-        text-align: center;
-        padding: 2px;
-        border-radius: 5px;
-    }
-    .emoji-item:hover {
-        background-color: rgba(0,0,0,0.1);
-    }
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts (Cairo) -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Styles -->
+    <style>
+        body { font-family: 'Cairo', sans-serif; background-color: #000; }
+        .glass-nav { background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255, 255, 255, 0.1); z-index: 50; }
+        .mobile-menu { transition: transform 0.3s ease-out; transform: translateX(-100%); left: 0; right: auto; }
+        .mobile-menu.open { transform: translateX(0); }
+        input[type="file"]::file-selector-button { margin-left: 0.5rem; background-color: #0d9488; color: white; border: 0; border-radius: 0.5rem; padding: 0.25rem 0.75rem; cursor: pointer; }
+        .modal-header-fixed { position: sticky; top: 0; z-index: 10; background-color: rgba(31, 41, 55, 0.95); backdrop-filter: blur(5px); }
+        .ltr { direction: ltr; }
+    </style>
+    
+    <!-- Firebase & Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+        import { getFirestore, collection, addDoc, query, orderBy, Timestamp, onSnapshot, setDoc, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
+        
+        // ** Settings **
+        const COMPANY_NAME = "Wolf TraVal";
+        const ADMIN_PIN = "1032";
+        const companyPhone = "201206244875"; 
+        const FB_PAGE = "https://www.facebook.com/share/1EwRcGeCDs/"; 
+        const CLOUD_NAME = "db9h7zm1h"; 
+        const UPLOAD_PRESET = "souq_upload"; 
+        const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
+        
+        let isAdmin = false; 
+        let tripsData = []; 
+        let db, auth, isAuthReady = false; 
+        let isEditing = false, editTripId = null, oldImageUrl = '';
 
+        const firebaseConfig = {
+          apiKey: "AIzaSyCTo8DhvaAmNtV9OIgY5eLOeVgF7iQqlYk",
+          authDomain: "faculty-of-commerce-2025.firebaseapp.com",
+          databaseURL: "https://faculty-of-commerce-2025-default-rtdb.europe-west1.firebasedatabase.app",
+          projectId: "faculty-of-commerce-2025",
+          storageBucket: "faculty-of-commerce-2025.firebasestorage.app",
+          messagingSenderId: "312259778835",
+          appId: "1:312259778835:web:504299bb2de918596b62e6",
+          measurementId: "G-QJZB7E2D5R"
+        };
+        const dataPath = `artifacts/${firebaseConfig.projectId}/public/data/trips`; 
 
-
-
-
-
-
-
-    /* --- تصميم خاص بالشاشات الأكبر (الكمبيوتر) --- */
-    /* هذه الإعدادات تعمل فقط على الشاشات التي عرضها 600 بكسل أو أكبر */
-    @media screen and (min-width: 600px) {
-        .chat-page {
-            background-attachment: fixed; /* <--- إعادة التثبيت لوضع الكمبيوتر */
+        // --- Notifications (Top Position) ---
+        window.showNotification = function(msg, type) {
+            const notif = document.createElement('div');
+            // إشعار يظهر في الأعلى (Top)
+            notif.className = `fixed top-24 left-1/2 -translate-x-1/2 px-6 py-3 rounded-xl text-white shadow-2xl z-[100] transition-all duration-500 opacity-0 transform translate-y-[-20px] ${type === 'error' ? 'bg-red-600/90' : type === 'success' ? 'bg-green-600/90' : 'bg-gray-700/90'} backdrop-blur-md border border-white/10`;
+            notif.innerHTML = msg;
+            document.body.appendChild(notif);
+            setTimeout(() => { notif.classList.remove('opacity-0', 'translate-y-[-20px]'); }, 50);
+            setTimeout(() => { notif.classList.add('opacity-0', 'translate-y-[-20px]'); setTimeout(() => notif.remove(), 500); }, 4000);
         }
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            background-color: #d1d8e0;
+
+        async function uploadToCloudinary(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', UPLOAD_PRESET);
+            try {
+                const response = await fetch(CLOUDINARY_URL, { method: 'POST', body: formData });
+                if (!response.ok) throw new Error("فشل الرفع");
+                const data = await response.json();
+                return data.secure_url; 
+            } catch (error) { console.error(error); throw new Error("فشل رفع الصورة"); }
         }
-        body.dark-mode {
-            background-color: #192a38;
+
+        // --- Admin Logic ---
+        window.toggleAdminModal = function() {
+            const modal = document.getElementById('adminPinModal');
+            modal.classList.toggle('hidden'); modal.classList.toggle('flex');
+            document.getElementById('pinInput').value = '';
         }
-        .chat-container {
-            max-width: 420px;
-            height: 95vh;
-            max-height: 850px;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            border: 1px solid #ccc;
+        window.checkAdminPin = function() {
+            if (document.getElementById('pinInput').value === ADMIN_PIN) {
+                isAdmin = true;
+                toggleAdminModal();
+                showNotification("✅ أهلاً بك يا مدير، تم تفعيل الصلاحيات", "success");
+                document.getElementById('adminButtonContainer').classList.remove('hidden');
+                document.getElementById('adminButtonContainer').classList.add('flex');
+                document.getElementById('adminButtonContainerMobile').classList.remove('hidden');
+                renderTrips(tripsData); 
+            } else { showNotification("❌ الرمز خطأ", "error"); }
+            return false; 
         }
-        @media (hover: hover) {
-            .nav-btn:hover {
-                background: rgba(255,255,255,0.15);
+        
+        // --- Init ---
+        async function initApp() {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            try {
+                await signInAnonymously(auth); 
+                isAuthReady = true;
+                document.getElementById('mobile-menu').style.top = `${document.querySelector('.glass-nav').offsetHeight}px`;
+                listenForTrips();
+                document.getElementById('companyName').textContent = COMPANY_NAME;
+                document.getElementById('footerCompanyName').textContent = COMPANY_NAME;
+            } catch (error) { showNotification("خطأ في الاتصال", "error"); }
+        }
+        
+        // --- Listen ---
+        function listenForTrips() {
+            if (!isAuthReady) return; 
+            const q = query(collection(db, dataPath), orderBy("createdAt", "desc")); 
+            onSnapshot(q, (snapshot) => {
+                const fetched = [];
+                snapshot.forEach((doc) => fetched.push({ id: doc.id, ...doc.data() }));
+                tripsData = fetched; 
+                if (tripsData.length === 0) {
+                    document.getElementById('trips-container').innerHTML = '<div class="col-span-full text-center text-gray-400 py-10">جاري تحميل البيانات...</div>';
+                    seedInitialData();
+                } else { renderTrips(tripsData); }
+            });
+        }
+        
+        // --- Render ---
+        function renderTrips(trips) {
+            const container = document.getElementById('trips-container');
+            container.innerHTML = ''; 
+            trips.forEach((trip) => {
+                const card = document.createElement('div');
+                card.className = "w-full max-w-sm mx-auto bg-gray-900/90 border border-gray-700 rounded-2xl overflow-hidden shadow-xl shadow-teal-500/20 transition-all duration-300 transform group hover:-translate-y-1";
+                const imageUrl = trip.mainImageUrl || 'https://via.placeholder.com/400x300';
+                
+                let remainingTime = '', isExpired = false;
+                if (trip.departureDate) {
+                    const diffMs = new Date(trip.departureDate) - new Date();
+                    if (diffMs > 0) remainingTime = `${Math.floor(diffMs / (86400000))} يوم متبقي`;
+                    else { remainingTime = 'انتهت'; isExpired = true; }
+                }
+
+                const statusTag = trip.status === 'expired' ? `<div class="absolute top-4 left-4 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded shadow-md z-10 animate-pulse">انتهت 🔥</div>` : '';
+                
+                const adminControls = isAdmin ? `
+                    <div class="flex flex-wrap justify-end gap-2 mb-3 border-b border-gray-700 pb-3">
+                        <button onclick="deleteTrip('${trip.id}', '${trip.title}')" class="flex items-center gap-1 bg-red-900/30 text-red-400 hover:bg-red-900/50 px-2 py-1 rounded text-xs transition-colors"><i class="fas fa-trash-alt"></i> حذف</button>
+                        <button onclick="prepareEditTrip('${trip.id}')" class="flex items-center gap-1 bg-blue-900/30 text-blue-400 hover:bg-blue-900/50 px-2 py-1 rounded text-xs transition-colors"><i class="fas fa-edit"></i> تعديل</button>
+                        <button onclick="toggleTripStatus('${trip.id}', '${trip.status === 'expired' ? 'active' : 'expired'}')" class="flex items-center gap-1 ${trip.status === 'expired' ? 'bg-green-900/30 text-green-400' : 'bg-yellow-900/30 text-yellow-400'} px-2 py-1 rounded text-xs transition-colors"><i class="fas ${trip.status === 'expired' ? 'fa-redo' : 'fa-ban'}"></i> ${trip.status === 'expired' ? 'تنشيط' : 'إنهاء'}</button>
+                    </div>
+                ` : '';
+
+                card.innerHTML = `
+                    <div class="relative h-56 overflow-hidden">
+                        <img src="${imageUrl}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                        <div class="absolute top-4 right-4 bg-teal-600/90 text-white text-[10px] font-bold px-2 py-1 rounded shadow-md z-10">${trip.durationText || 'غير محدد'}</div>
+                        ${statusTag}
+                        <button onclick="shareTrip('${trip.title}', '?tripId=${trip.id}')" class="absolute bottom-4 right-4 bg-white text-gray-900 w-8 h-8 rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-transform"><i class="fas fa-share-alt"></i></button>
+                    </div>
+                    <div class="p-4 bg-gray-800 rounded-b-2xl"> 
+                        ${adminControls}
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-lg font-bold text-white leading-tight">${trip.title}</h3>
+                            <span class="text-teal-400 font-extrabold text-lg whitespace-nowrap">${trip.price} <span class="text-xs font-normal text-gray-400">ج.م</span></span>
+                        </div>
+                        <div class="text-gray-400 text-xs mb-4 line-clamp-2 h-8 leading-4">${trip.description}</div>
+                        <div class="text-gray-400 text-[11px] border-t border-gray-700 pt-3 space-y-2">
+                             <div class="flex justify-between"><span><i class="fas fa-calendar-alt ml-1 text-teal-500"></i> ${new Date(trip.departureDate).toLocaleDateString('ar-EG')}</span><span class="${isExpired ? 'text-red-500 font-bold' : 'text-yellow-500'}"><i class="fas fa-hourglass-half ml-1"></i> ${remainingTime}</span></div>
+                             <div class="flex justify-between"><span><i class="fas fa-map-marker-alt ml-1 text-blue-500"></i> ${trip.location}</span><span><i class="fas fa-users ml-1 text-blue-500"></i> متاح: ${trip.availableSeats || '0'}</span></div>
+                        </div>
+                        <button onclick="openBooking('${trip.title}', '${trip.code}', '${trip.price}')" class="w-full bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 text-white font-bold py-2.5 px-4 rounded-xl shadow-lg mt-4 text-sm flex justify-center items-center gap-2 transition-transform active:scale-95"><i class="fab fa-whatsapp text-lg"></i> احجز الآن</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+        
+        window.shareTrip = async function(title, link) {
+             try { await navigator.clipboard.writeText(window.location.origin + window.location.pathname + link); showNotification("تم نسخ الرابط", "success"); } 
+             catch { showNotification("فشل النسخ", "error"); }
+        }
+
+        // --- Operations ---
+        window.deleteTrip = async function(tripId, title) {
+            if (!isAdmin) return;
+            if (confirm(`هل أنت متأكد من حذف رحلة "${title}"؟`)) {
+                await deleteDoc(doc(db, dataPath, tripId));
+                showNotification("تم الحذف بنجاح", "success");
             }
-            .member-item-wrapper:hover {
-                transform: scale(1.02);
+        }
+        window.toggleTripStatus = async function(tripId, newStatus) {
+            if (!isAdmin) return;
+            await setDoc(doc(db, dataPath, tripId), { status: newStatus }, { merge: true });
+            showNotification(newStatus === 'expired' ? "تم تحديد الرحلة كمنتهية" : "تم إعادة تفعيل الرحلة", "success");
+        }
+        window.prepareEditTrip = function(id) {
+            if (!isAdmin) return;
+            const trip = tripsData.find(t => t.id === id);
+            isEditing = true; editTripId = id; oldImageUrl = trip.mainImageUrl || '';
+            const modal = document.getElementById('addTripModal');
+            modal.classList.remove('hidden'); modal.classList.add('flex');
+            document.getElementById('modalTitle').textContent = "تعديل الرحلة";
+            document.getElementById('submitBtn').innerHTML = `<i class="fas fa-save ml-1"></i> حفظ التعديلات`;
+            // ملء البيانات
+            document.getElementById('tripTitle').value = trip.title;
+            document.getElementById('tripLocation').value = trip.location;
+            document.getElementById('tripPrice').value = trip.price;
+            document.getElementById('departureDate').value = trip.departureDate;
+            document.getElementById('availableSeats').value = trip.availableSeats;
+            document.getElementById('tripDesc').value = trip.description;
+        }
+        window.openBooking = function(title, code, price) {
+            window.open(`https://wa.me/${companyPhone}?text=${encodeURIComponent(`مرحباً، أود حجز: ${title} (Code: ${code})`)}`, '_blank');
+        }
+
+        // --- Submit ---
+        window.handleTripSubmit = async function(event) {
+            event.preventDefault();
+            if (!isAdmin) return;
+            const btn = document.getElementById('submitBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = 'جاري الحفظ...'; btn.disabled = true;
+
+            const title = document.getElementById('tripTitle').value;
+            const price = document.getElementById('tripPrice').value;
+            const location = document.getElementById('tripLocation').value;
+            const description = document.getElementById('tripDesc').value;
+            const departureDate = document.getElementById('departureDate').value;
+            const availableSeats = parseInt(document.getElementById('availableSeats').value) || 0;
+            const nights = document.getElementById('nightsSelect').value === 'other' ? document.getElementById('nightsCustom').value : document.getElementById('nightsSelect').value;
+            const days = document.getElementById('daysSelect').value === 'other' ? document.getElementById('daysCustom').value : document.getElementById('daysSelect').value;
+            const durationText = `${days} أيام / ${nights} ليالي`;
+
+            const imageFile = document.getElementById('tripImageFile').files[0];
+            let mainImageUrl = oldImageUrl;
+
+            if (imageFile) {
+                try { mainImageUrl = await uploadToCloudinary(imageFile); } 
+                catch (e) { showNotification("فشل رفع الصورة", "error"); btn.innerHTML = originalText; btn.disabled = false; return; }
+            } else if (!isEditing && !imageFile) {
+                 showNotification("الرجاء اختيار صورة", "error"); btn.innerHTML = originalText; btn.disabled = false; return;
             }
+
+            try {
+                if (isEditing) {
+                    await updateDoc(doc(db, dataPath, editTripId), { title, price, location, description, departureDate, availableSeats, durationText, mainImageUrl });
+                    showNotification("تم التعديل بنجاح", "success");
+                } else {
+                    const code = 'TRIP-' + Math.floor(1000 + Math.random() * 9000);
+                    await addDoc(collection(db, dataPath), { title, price, location, description, departureDate, availableSeats, durationText, code, mainImageUrl, status: 'active', createdAt: Timestamp.now() });
+                    showNotification("تمت الإضافة بنجاح", "success");
+                }
+                closeTripModal();
+            } catch (error) { showNotification("حدث خطأ", "error"); } 
+            finally { btn.innerHTML = originalText; btn.disabled = false; }
         }
-    }
-    @media screen and (min-width: 1200px) {
-        .chat-container {
-            max-width: 450px;
+
+        // --- Seed Data ---
+        let seedAttempted = false;
+        async function seedInitialData() {
+            if (!isAuthReady || seedAttempted) return;
+            seedAttempted = true;
+            const demoTrips = [
+                { title: "رحلة دهب المميزة", price: "3500", location: "دهب", durationText: "4 أيام / 3 ليالي", departureDate: new Date(Date.now() + 864000000).toISOString().slice(0, 16), availableSeats: 25, description: "استمتع بالبحر والهدوء.", mainImageUrl: "https://images.pexels.com/photos/3355788/pexels-photo-3355788.jpeg?auto=compress&cs=tinysrgb&w=600", code: "D1", status: 'active' },
+                { title: "سفاري سيوة", price: "4200", location: "سيوة", durationText: "4 أيام / 3 ليالي", departureDate: new Date(Date.now() + 1200000000).toISOString().slice(0, 16), availableSeats: 15, description: "تجربة السفاري الحقيقية.", mainImageUrl: "https://images.pexels.com/photos/4553618/pexels-photo-4553618.jpeg?auto=compress&cs=tinysrgb&w=600", code: "D2", status: 'active' },
+                { title: "الأقصر وأسوان", price: "8500", location: "الأقصر", durationText: "5 أيام / 4 ليالي", departureDate: new Date(Date.now() + 2000000000).toISOString().slice(0, 16), availableSeats: 10, description: "رحلة التاريخ والحضارة.", mainImageUrl: "https://images.pexels.com/photos/2088219/pexels-photo-2088219.jpeg?auto=compress&cs=tinysrgb&w=600", code: "D3", status: 'active' }
+            ];
+            for (const trip of demoTrips) { await addDoc(collection(db, dataPath), { ...trip, createdAt: Timestamp.now() }); }
+            showNotification("تمت إضافة رحلات تجريبية", "success");
         }
-    }
-  </style>
+        
+        // --- Helpers ---
+        window.toggleTripModal = function() {
+            if (!isAdmin) { showNotification("غير مصرح", "error"); return; }
+            isEditing = false; editTripId = null; oldImageUrl = '';
+            const modal = document.getElementById('addTripModal');
+            modal.classList.toggle('hidden'); modal.classList.toggle('flex');
+            document.getElementById('addTripForm').reset();
+            document.getElementById('modalTitle').textContent = "إضافة رحلة جديدة";
+            document.getElementById('submitBtn').innerHTML = "حفظ ونشر الرحلة";
+        }
+        window.closeTripModal = function() { document.getElementById('addTripModal').classList.add('hidden'); document.getElementById('addTripModal').classList.remove('flex'); isEditing = false; }
+        window.toggleMobileMenu = function() { const menu = document.getElementById('mobile-menu'); menu.classList.toggle('open'); menu.classList.toggle('hidden'); }
+        window.toggleCustomInput = function(selectId, customId) {
+            const el = document.getElementById(customId);
+            document.getElementById(selectId).value === 'other' ? (el.classList.remove('hidden'), el.required=true) : (el.classList.add('hidden'), el.required=false);
+        }
+        window.onload = initApp;
+    </script>
 </head>
-<body>
-  <!-- الحاوية الرئيسية للشات -->
-  <div class="chat-container">
-    <!-- الشريط العلوي (الهيدر) -->
-    <header class="chat-header" id="chatHeader" style="display: none;">
-      <img src="https://placehold.co/44x44/0a3d62/FFF?text=S" class="avatar" alt="avatar" />
-      <h1 class="title">شات شهاب</h1>
-      <button class="logout-btn" id="logoutBtn">🚪 خروج</button>
-    </header>
-    <!-- شريط التنقل -->
-    <nav class="chat-nav" id="chatNav" style="display: none;">
-      <button class="nav-btn" onclick="openPage('chat', this)">الدردشة</button>
-      <button class="nav-btn" onclick="openPage('members', this)">الأعضاء</button>
-      <button class="nav-btn" onclick="openPage('settings', this)">الإعدادات</button>
-      <button class="nav-btn" onclick="openPage('profile', this)">البروفايل</button>
-    </nav>
-    <!-- حاوية المحتوى الرئيسية (يتم تحميل الصفحات هنا) -->
-    <main class="chat-content" id="content"></main>
-    <!-- شاشة التحميل -->
-    <div id="loadingScreen" style="display: none;"><div class="loading-spinner"></div></div>
+<body class="bg-gray-900 min-h-screen relative text-gray-100 selection:bg-teal-500 selection:text-white">
 
-
-
-
-
-
-
-
-    <!-- نافذة تأكيد الإجراءات (مودال) -->
-    <div id="confirmModal" class="modal-overlay">
-        <div class="modal-content">
-            <h3 id="confirmModalTitle" class="modal-title">تأكيد الإجراء</h3>
-            <p id="confirmModalBody" class="modal-body">هل أنت متأكد؟</p>
-            <div class="modal-buttons">
-                <button id="confirmModalCancel" class="form-btn-cancel">إلغاء</button>
-                <button id="confirmModalOk" class="form-btn-confirm">تأكيد</button>
-            </div>
-        </div>
+    <div class="fixed inset-0 z-0">
+        <img src="https://images.pexels.com/photos/2559941/pexels-photo-2559941.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" class="w-full h-full object-cover">
+        <div class="absolute inset-0 bg-gray-900/70"></div> 
     </div>
 
-
-
-
-
-
-
-
-    <!-- نافذة إجراءات العضو (مودال) -->
-    <div id="memberActionModal" class="modal-overlay">
-        <div class="modal-content">
-            <h3 id="memberActionTitle" class="modal-title"></h3>
-            <div class="modal-buttons" style="flex-direction: column; gap: 10px;">
-                <button id="memberActionViewProfile" class="settings-btn-themed" style="background: var(--primary-dark);">👤 عرض الملف الشخصي</button>
-                <button id="memberActionMute" class="settings-btn-themed">🔇 تقييد الإرسال</button>
-                <button id="memberActionUnmute" class="settings-btn-themed" style="background: var(--accent-color);">🔊 إلغاء التقييد</button>
-                <button id="memberActionDelete" class="settings-btn-themed" style="background: var(--danger-color);">🗑️ حذف العضو</button>
-                <button id="memberActionCancel" class="form-btn-cancel">إلغاء</button>
-            </div>
-        </div>
-    </div>
-
-
-
-
-
-
-
-
-    <!-- نافذة إجراءات الرسالة (مودال جديد) -->
-    <div id="messageActionModal" class="modal-overlay">
-        <div class="modal-content">
-            <h3 class="modal-title">خيارات الرسالة</h3>
-            <div class="modal-buttons" style="flex-direction: column; gap: 10px;">
-                <button id="messageActionEdit" class="settings-btn-themed" style="background: var(--primary-dark);">✏️ تعديل الرسالة</button>
-                <button id="messageActionReply" class="settings-btn-themed" style="background: var(--accent-color);">↩️ رد على الرسالة</button>
-                <button id="messageActionReact" class="settings-btn-themed" style="background: #f39c12;">😀 تفاعل على الرسالة</button>
-                <button id="messageActionCopy" class="settings-btn-themed" style="background: #3498db;">📋 نسخ الرسالة</button>
-                <button id="messageActionForward" class="settings-btn-themed" style="background: #f39c12;">➡️ إعادة توجيه</button>
-                <button id="messageActionDelete" class="settings-btn-themed" style="background: var(--danger-color);">🗑️ حذف الرسالة</button>
-                <button id="messageActionCancel" class="form-btn-cancel">إلغاء</button>
-            </div>
-        </div>
-    </div>
-
-
-
-
-
-
-
-
-    <!-- نافذة تعديل الرسالة (مودال جديد) -->
-    <div id="editMessageModal" class="modal-overlay">
-        <div class="modal-content">
-            <h3 class="modal-title">تعديل الرسالة</h3>
-            <textarea id="editMessageInput" placeholder="اكتب التعديل هنا..." dir="rtl"></textarea>
-            <div class="modal-buttons">
-                <button id="editMessageCancel" class="form-btn-cancel">إلغاء</button>
-                <button id="editMessageSave" class="form-btn-confirm">حفظ التعديل</button>
-            </div>
-        </div>
-    </div>
-
-
-
-
-    <!-- === [جديد] نافذة التفاعلات (مودال) === -->
-    <div id="reactionModal" class="modal-overlay">
-        <div class="modal-content">
-            <h3 class="modal-title">اختر تفاعلك</h3>
-            <div class="reaction-grid" id="reactionGrid">
-                <!-- سيتم ملؤها بواسطة JavaScript -->
-            </div>
-            <div class="modal-buttons" style="margin-top: 10px;">
-                <button id="reactionModalCancel" class="form-btn-cancel">إلغاء</button>
-            </div>
-        </div>
-    </div>
-    <!-- === نهاية نافذة التفاعلات === -->
-
-
-
-
-    <!-- === [جديد] نافذة اختيار الإيموجي (مودال) === -->
-    <div id="emojiPickerModal" class="modal-overlay">
-        <div class="modal-content">
-            <h3 class="modal-title">اختر إيموجي</h3>
-            <div class="emoji-grid" id="emojiGrid">
-                <!-- سيتم ملؤها بواسطة JavaScript -->
-            </div>
-            <div class="modal-buttons" style="margin-top: 10px;">
-                <button id="emojiPickerModalClose" class="form-btn-cancel">إغلاق</button>
-            </div>
-        </div>
-    </div>
-    <!-- === نهاية نافذة اختيار الإيموجي === -->
-
-
-
-
-
-
-
-
-  </div>
-
-
-
-
-
-
-
-
-  <script type="module">
-    // --- استيراد مكتبات Firebase ---
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signInAnonymously, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, doc, setDoc, getDoc, onSnapshot, updateDoc, query, Timestamp, addDoc, orderBy, deleteDoc, getDocs, writeBatch, where, limitToLast, FieldPath, FieldValue } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-
-
-
-
-
-
-
-    /* --- إعدادات Firebase --- */
-    const firebaseConfig = {
-      apiKey: "AIzaSyBnFVN-3U4NlLljUbVHHh4vQB9Mmp7RE5A",
-      authDomain: "zagazig-commerce.firebaseapp.com",
-      projectId: "zagazig-commerce",
-      storageBucket: "zagazig-commerce.appspot.com",
-      messagingSenderId: "783055989739",
-      appId: "1:783055989739:web:d906f9381cb3daac2447ae"
-    };
-
-
-
-
-
-
-
-
-    /* --- تهيئة Firebase --- */
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app); // وحدة المصادقة
-    const db = getFirestore(app); // وحدة قاعدة البيانات (Firestore)
-    const usersCollection = collection(db, `public/data/users`);
-    const messagesCollection = collection(db, `public/data/messages`);
-    const globalSettingsDoc = doc(db, `public/data/global_config/settings`);
-    // [جديد] مرجع حالة الكتابة
-    const typingStatusDoc = doc(db, 'public/data/typing_status', 'status');
-
-
-
-
-
-
-
-
-    /* --- متغيرات الحالة العامة والتخزين المؤقت --- */
-    let currentUserProfile = null; // تخزين بيانات المستخدم الحالي
-    let usersCache = {}; // تخزين بيانات كل المستخدمين لتقليل جلب البيانات
-    let globalSettings = null; // الإعدادات العامة التي يطبقها المالك
-    let pageCache = {}; // تخزين الصفحات (الدردشة، الأعضاء...) في الذاكرة
-    let dataListeners = []; // مصفوفة لتخزين "مراقبي البيانات" لإيقافهم عند الخروج
-    let replyingToMessage = null; // لتخزين بيانات الرسالة التي يتم الرد عليها
-    let typingUsers = {}; // [جديد] لتخزين حالة الكتابة للجميع
-    let currentMessageToReact = null; // [جديد] لتخزين الرسالة التي يتم التفاعل عليها
-
-
-
-
-
-
-
-
-    /* --- إصلاح 2: عدادات الصور الرمزية المتسلسلة --- */
-    let maleAvatarIndex = 0;
-    let femaleAvatarIndex = 0;
-
-
-
-
-
-
-
-
-    /* --- جلب عناصر الصفحة الأساسية --- */
-    const contentEl = document.getElementById("content");
-    const headerEl = document.getElementById("chatHeader");
-    const navEl = document.getElementById("chatNav");
-    const loadingScreen = document.getElementById("loadingScreen");
-    const logoutBtn = document.getElementById('logoutBtn');
-    const memberActionModal = document.getElementById('memberActionModal');
-    const memberActionTitle = document.getElementById('memberActionTitle');
-    const memberActionViewProfile = document.getElementById('memberActionViewProfile');
-    const memberActionMute = document.getElementById('memberActionMute');
-    const memberActionUnmute = document.getElementById('memberActionUnmute');
-    const memberActionDelete = document.getElementById('memberActionDelete');
-    const memberActionCancel = document.getElementById('memberActionCancel');
-
-
-
-
-    // عناصر مودال إجراءات الرسالة
-    const messageActionModal = document.getElementById('messageActionModal');
-    const messageActionEdit = document.getElementById('messageActionEdit');
-    const messageActionReply = document.getElementById('messageActionReply');
-    const messageActionReact = document.getElementById('messageActionReact'); // [جديد]
-    const messageActionCopy = document.getElementById('messageActionCopy');
-    const messageActionForward = document.getElementById('messageActionForward');
-    const messageActionDelete = document.getElementById('messageActionDelete');
-    const messageActionCancel = document.getElementById('messageActionCancel');
-
-
-
-
-
-
-
-
-    // عناصر مودال تعديل الرسالة
-    const editMessageModal = document.getElementById('editMessageModal');
-    const editMessageInput = document.getElementById('editMessageInput');
-    const editMessageSave = document.getElementById('editMessageSave');
-    const editMessageCancel = document.getElementById('editMessageCancel');
-
-
-
-
-    // [جديد] عناصر مودال التفاعلات
-    const reactionModal = document.getElementById('reactionModal');
-    const reactionGrid = document.getElementById('reactionGrid');
-    const reactionModalCancel = document.getElementById('reactionModalCancel');
-    
-    // [جديد] عناصر مودال الإيموجي
-    const emojiPickerModal = document.getElementById('emojiPickerModal');
-    const emojiGrid = document.getElementById('emojiGrid');
-    const emojiPickerModalClose = document.getElementById('emojiPickerModalClose');
-
-
-
-
-
-
-
-
-    /* --- الصور الرمزية الافتراضية والإعدادات --- */
-    const maleAvatars = [
-      "https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=100&h=100&fit=crop",
-      "https://images.pexels.com/photos/91227/pexels-photo-91227.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=100&h=100&fit=crop",
-      "https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop",
-      "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop",
-      "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop",
-      "https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop",
-      "https://images.pexels.com/photos/846741/pexels-photo-846741.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop",
-      "https://images.pexels.com/photos/1082962/pexels-photo-1082962.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop",
-    ];
-    const femaleAvatars = [
-      "https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=100&h=100&fit=crop",
-      "https://images.pexels.com/photos/1181519/pexels-photo-1181519.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=100&h=100&fit=crop",
-      "https://images.pexels.com/photos/1065084/pexels-photo-1065084.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop",
-      "https://images.pexels.com/photos/1130626/pexels-photo-1130626.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop",
-      "https://images.pexels.com/photos/1858175/pexels-photo-1858175.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop",
-      "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop",
-      "https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop",
-      "https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop",
-    ];
-
-
-
-
-
-
-
-
-    const backgroundImages = [
-        { thumb: 'https://images.pexels.com/photos/15286/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=150', full: 'https://images.pexels.com/photos/15286/pexels-photo.jpg' },
-        { thumb: 'https://images.pexels.com/photos/3408744/pexels-photo-3408744.jpeg?auto=compress&cs=tinysrgb&w=150', full: 'https://images.pexels.com/photos/3408744/pexels-photo-3408744.jpeg' },
-        { thumb: 'https://images.pexels.com/photos/1287145/pexels-photo-1287145.jpeg?auto=compress&cs=tinysrgb&w=150', full: 'https://images.pexels.com/photos/1287145/pexels-photo-1287145.jpeg' },
-        { thumb: 'https://images.pexels.com/photos/1766838/pexels-photo-1766838.jpeg?auto=compress&cs=tinysrgb&w=150', full: 'https://images.pexels.com/photos/1766838/pexels-photo-1766838.jpeg' },
-        { thumb: 'https://images.pexels.com/photos/3225528/pexels-photo-3225528.jpeg?auto=compress&cs=tinysrgb&w=150', full: 'https://images.pexels.com/photos/3225528/pexels-photo-3225528.jpeg' },
-        { thumb: 'https://images.pexels.com/photos/2098428/pexels-photo-2098428.jpeg?auto=compress&cs=tinysrgb&w=150', full: 'https://images.pexels.com/photos/2098428/pexels-photo-2098428.jpeg' },
-    ];
-    const defaultSettings = {
-        darkMode: false, sentBubbleBg: '#e1ffc7', recvBubbleBg: '#ffffff',
-        fontSize: 12, chatBackground: '', 
-        bubblePadding: 1, 
-    };
-
-
-
-
-    // [محدث] قائمة التفاعلات المتاحة (تم توسيعها لـ 20 رمزاً)
-    const availableReactions = [
-      '👍', '❤️', '😂', '😢', '😡', '🙏', '🔥', '🤯', '🥳', '🤔', 
-      '👏', '💯', '💔', '😍', '😴', '😭', '🤩', '🤮', '😈', '😇'
-    ];
-    
-    // [جديد] قائمة الإيموجي للاختيار (50 رمزاً)
-    const emojiList = [
-        '😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃', 
-        '😉', '😊', '😇', '🥰', '😍', '🤩', '😘', '😗', '😚', '😙', 
-        '🥲', '😋', '😛', '😜', '🤪', '😝', '🤑', '🤗', '🤭', '🤫', 
-        '🤔', '🫡', '🤨', '😐', '😑', '😶', '🫥', '😶‍🌫️', '😏', '😒', 
-        '🙄', '😬', '😮‍💨', '🤥', '😌', '😔', '😪', '🤤', '😴', '😷',
-        '🤒', '🤕', '🤢', '🤮', '🤧', '🥵', '🥶', '🥴', '😵', '😵‍💫',
-        '🤯', '🤠', '🥳', '🥸', '🥺', '🥹', '😭', '😢', '😥', '泄',
-        '😨', '😩', '😫', '💢', '🔥', '💯', '👍', '👎', '👏', '🙏',
-        '❤️', '💔', '🌹', '🍕', '🍺', '⚽', '💻', '💡', '⏰', '🚀'
-    ];
-
-
-
-
-
-
-
-
-    /* --- دوال مساعدة (إظهار التحميل، التنبيهات...) --- */
-    const showLoading = (show) => { loadingScreen.style.display = show ? 'flex' : 'none'; };
-    const setActiveNav = (btn) => {
-      document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
-      if (btn) btn.classList.add("active");
-    };
-    // دالة إظهار تنبيه علوي مؤقت
-    const showToast = (message) => {
-        const toast = document.createElement('div');
-        toast.className = 'toast-notification';
-        toast.textContent = message;
-        document.querySelector('.chat-container').appendChild(toast);
-        setTimeout(() => { toast.style.top = '20px'; }, 10);
-        setTimeout(() => {
-            toast.style.top = '-100px';
-            setTimeout(() => { toast.remove(); }, 500);
-        }, 3000);
-    };
-
-
-
-
-
-
-
-
-    /* --- إصلاح 2: استبدال دالة "عشوائي" بدالة "التالي" --- */
-    const getNextAvatar = (gender = 'male') => {
-        if (gender === 'male') {
-            const avatar = maleAvatars[maleAvatarIndex];
-            maleAvatarIndex = (maleAvatars.length + maleAvatarIndex + 1) % maleAvatars.length; // زيادة العداد والعودة للصفر
-            return avatar;
-        } else {
-            const avatar = femaleAvatars[femaleAvatarIndex];
-            femaleAvatarIndex = (femaleAvatars.length + femaleAvatarIndex + 1) % femaleAvatars.length; // زيادة العداد والعودة للصفر
-            return avatar;
-        }
-    };
-
-
-
-
-
-
-
-
-    // دالة إظهار نافذة التأكيد
-    const showConfirmModal = (title, body) => {
-        return new Promise((resolve) => {
-            const modal = document.getElementById('confirmModal');
-            document.getElementById('confirmModalTitle').textContent = title;
-            document.getElementById('confirmModalBody').textContent = body;
-            modal.classList.add('active');
-            const okBtn = document.getElementById('confirmModalOk');
-            const cancelBtn = document.getElementById('confirmModalCancel');
-            const close = (result) => {
-                modal.classList.remove('active');
-                okBtn.replaceWith(okBtn.cloneNode(true));
-                cancelBtn.replaceWith(cancelBtn.cloneNode(true));
-                resolve(result);
-            }
-            document.getElementById('confirmModalOk').onclick = () => close(true);
-            document.getElementById('confirmModalCancel').onclick = () => close(false);
-        });
-    };
-
-
-
-
-
-
-
-
-    // --- دالة جديدة: تنسيق الوقت (منذ 5 دقائق...) ---
-    function formatTimeAgo(timestamp) {
-        if (!timestamp) return 'غير معروف';
-        const date = timestamp.toDate();
-        const now = new Date();
-        const seconds = Math.floor((now - date) / 1000);
-
-
-
-
-
-
-
-
-        let interval = seconds / 31536000;
-        if (interval > 1) return `منذ ${Math.floor(interval)} سنة`;
-        interval = seconds / 2592000;
-        if (interval > 1) return `منذ ${Math.floor(interval)} شهر`;
-        interval = seconds / 86400;
-        if (interval > 1) return `منذ ${Math.floor(interval)} يوم`;
-        interval = seconds / 3600;
-        if (interval > 1) return `منذ ${Math.floor(interval)} ساعة`;
-        interval = seconds / 60;
-        if (interval > 1) return `منذ ${Math.floor(interval)} دقيقة`;
-        return 'الآن';
-    }
-
-
-
-
-
-
-
-
-    /* --- [جديد] دالة ضغط الصور قبل رفعها --- */
-    async function compressImage(file, maxSize = 800, quality = 0.7) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = (event) => {
-                const img = new Image();
-                img.src = event.target.result;
-                img.onload = () => {
-                    let { width, height } = img;
-                    if (width > height) {
-                        if (width > maxSize) { height *= maxSize / width; width = maxSize; }
-                    } else {
-                        if (height > maxSize) { width *= maxSize / height; height = maxSize; }
-                    }
-                    const canvas = document.createElement('canvas');
-                    canvas.width = width;
-                    canvas.height = height;
-                    canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-                    resolve(canvas.toDataURL('image/jpeg', quality));
-                };
-                img.onerror = reject;
-            };
-            reader.onerror = reject;
-        });
-    }
-
-
-
-
-    /* --- [جديد] دالة رفع الصور إلى Cloudinary --- */
-    async function uploadToCloudinary(fileOrBlob) {
-        const formData = new FormData();
-        formData.append('file', fileOrBlob);
-        formData.append('upload_preset', 'souq_upload'); // Preset الرفع الخاص بك
-        const CLOUD_NAME = 'db9h7zm1h'; // اسم السحابة الخاص بك
-        const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
-        try {
-            const response = await fetch(url, { method: 'POST', body: formData });
-            if (!response.ok) throw new Error('فشل الرفع إلى Cloudinary');
-            const data = await response.json();
-            return data.secure_url; // إرجاع الرابط الآمن للصورة
-        } catch (error) {
-            console.error("خطأ في الرفع إلى Cloudinary:", error);
-            showToast("فشل رفع الصورة.");
-            return null;
-        }
-    }
-
-
-
-
-
-
-
-
-    // --- دالة جديدة: تحديث حالة الاتصال ---
-    async function updateUserPresence(isOnline) {
-        if (!auth.currentUser) return;
-        try {
-            const userDocRef = doc(usersCollection, auth.currentUser.uid);
-            await updateDoc(userDocRef, {
-                isOnline: isOnline,
-                lastSeen: Timestamp.now()
-            });
-        } catch (error) {
-            console.warn("Failed to update presence:", error.code);
-        }
-    }
-
-
-
-
-    // [محدث] دالة تحديث حالة الكتابة (مع Debounce)
-    let typingTimeout;
-    async function updateTypingStatus(isTyping) {
-        if (!auth.currentUser || !currentUserProfile) return;
-        const userId = auth.currentUser.uid;
-        const typingField = FieldPath.of(userId);
-
-
-
-
-        clearTimeout(typingTimeout);
-
-
-
-
-        if (isTyping) {
-            // 1. تحديث الحالة فوراً
-            await updateDoc(typingStatusDoc, {
-                [typingField]: Timestamp.now()
-            });
-            // 2. تعيين مؤقت لإزالة الحالة بعد 3 ثوانٍ من التوقف عن الكتابة
-            typingTimeout = setTimeout(() => {
-                updateTypingStatus(false);
-            }, 3000);
-        } else {
-            // 3. إزالة الحالة من Firestore
-            await updateDoc(typingStatusDoc, {
-                [typingField]: FieldValue.delete()
-            }).catch(e => console.warn("Failed to delete typing status:", e));
-        }
-    }
-
-
-
-
-
-
-
-
-    /* --- دالة تطبيق إعدادات المستخدم على الواجهة --- */
-    const applyUserSettings = (settings) => {
-        const s = { ...defaultSettings, ...settings };
-        document.body.classList.toggle('dark-mode', s.darkMode);
-        const rootStyle = document.documentElement.style;
-        rootStyle.setProperty('--wa-sent-bubble-bg', s.sentBubbleBg);
-        rootStyle.setProperty('--wa-recv-bubble-bg', s.recvBubbleBg);
-        rootStyle.setProperty('--font-size', `${s.fontSize}px`);
-
-
-
-
-
-
-
-
-        let paddingValue = '4px 8px'; // Default (Extra Small)
-        if (s.bubblePadding == 1) paddingValue = '5px 10px'; // Small
-        if (s.bubblePadding == 2) paddingValue = '8px 12px'; // Medium
-        if (s.bubblePadding == 3) paddingValue = '12px 16px'; // Large
-        rootStyle.setProperty('--bubble-padding', paddingValue);
-
-
-
-
-
-
-
-
-        if (pageCache.chat) { 
-            const bgValue = s.chatBackground 
-                ? `url(${s.chatBackground})` 
-                : 'none';
-            pageCache.chat.style.backgroundImage = bgValue;
-        }
-    };
-
-
-
-
-    /* --- [تم الإصلاح] دالة دمج الإعدادات العامة والشخصية --- */
-    const applyCombinedSettings = () => {
-        if (!currentUserProfile) return;
+    <div class="relative z-10 flex flex-col min-h-screen">
         
-        // 1. ابدأ بالإعدادات الافتراضية
-        let finalSettings = { ...defaultSettings };
-        
-        // 2. قم بتطبيق الإعدادات العامة (التي وضعها المالك)، إن وجدت
-        if (globalSettings) {
-            finalSettings = { ...finalSettings, ...globalSettings };
-        }
-        
-        // 3. قم بتطبيق إعدادات المستخدم الشخصية، والتي تتجاوز كلاً من الافتراضية والعامة
-        if (currentUserProfile.settings) {
-            finalSettings = { ...finalSettings, ...currentUserProfile.settings };
-        }
-        
-        // 4. طبق الإعدادات النهائية المدمجة على الواجهة
-        applyUserSettings(finalSettings);
-    };
-
-
-
-
-
-
-
-
-    /* --- دالة إيقاف مراقبة البيانات (عند تسجيل الخروج) --- */
-    function detachAllListeners() {
-        dataListeners.forEach(unsubscribe => unsubscribe());
-        dataListeners = [];
-        clearTimeout(typingTimeout); // [جديد] مسح مؤقت الكتابة
-    }
-
-
-
-
-
-
-
-
-    /* --- الدالة الرئيسية لتهيئة التطبيق بعد التحقق من تسجيل الدخول --- */
-    async function initializeAppState(user) {
-        detachAllListeners(); // إيقاف أي مراقبات سابقة
-
-
-
-
-
-
-
-
-        // إذا لم يكن هناك مستخدم (تم تسجيل الخروج)
-        if (!user) {
-            currentUserProfile = null;
-            headerEl.style.display = "none";
-            navEl.style.display = "none";
-            contentEl.innerHTML = "";
-            pageCache = {};
-            showWelcomePage(); // إظهار صفحة الدخول
-            return;
-        }
-
-
-
-
-
-
-
-
-        // إذا كان هناك مستخدم
-        showLoading(true);
-        try {
-            const userDocRef = doc(usersCollection, user.uid);
-            const userDoc = await getDoc(userDocRef);
-
-
-
-
-
-
-
-
-            if (userDoc.exists()) {
-                // المستخدم موجود ولديه بروفايل
-                currentUserProfile = { id: user.uid, ...userDoc.data() };
-
-
-
-
-
-
-
-
-                updateUserPresence(true); 
-
-
-
-
-
-
-
-
-                document.addEventListener("visibilitychange", () => {
-                    if (!auth.currentUser) return;
-                    const isOnline = document.visibilityState === "visible";
-                    updateUserPresence(isOnline);
-                });
-
-
-
-
-
-
-
-
-                buildPageCache(); // بناء حاويات الصفحات
-                attachDataListeners(user.uid); // بدء مراقبة البيانات
-
-
-
-
-
-
-
-
-                // [تم التعديل] سيتم تطبيق الإعدادات بعد جلب الإعدادات العامة في attachDataListeners
-                updateHeaderUI(currentUserProfile); // تحديث الهيدر
-                headerEl.style.display = "flex";
-                navEl.style.display = "flex";
-                logoutBtn.onclick = handleLogout;
-                openPage('chat', document.querySelector('.nav-btn')); // فتح صفحة الشات
-            } else {
-                // المستخدم جديد، ليس لديه بروفايل
-                headerEl.style.display = "none";
-                navEl.style.display = "none";
-                showNewUserProfilePage(user); // إظهار صفحة إكمال البروفايل
-            }
-        } catch (error) {
-            console.error("Error initializing app state:", error);
-            showToast("حدث خطأ أثناء تحميل البيانات.");
-        } finally {
-            showLoading(false);
-        }
-    }
-
-
-
-
-
-
-
-
-    /* --- مراقبة تغيير حالة تسجيل الدخول --- */
-    onAuthStateChanged(auth, initializeAppState);
-
-
-
-
-
-
-
-
-    /* --- دوال تسجيل الدخول والخروج --- */
-    const handleLogin = async () => {
-        showLoading(true);
-        try { await signInAnonymously(auth); } // تسجيل دخول مجهول
-        catch (error) { console.error("Anonymous sign-in failed:", error); showLoading(false); }
-    };
-
-
-
-
-
-
-
-
-    const handleLogout = async () => {
-        showLoading(true);
-        try { 
-            if (auth.currentUser) { 
-                await updateUserPresence(false);
-                await updateTypingStatus(false); // [جديد] إزالة حالة الكتابة عند الخروج
-            }
-            await signOut(auth); // تسجيل الخروج
-        } 
-        catch (error) { console.error("Sign out error", error); } 
-        finally { showLoading(false); }
-    };
-
-
-
-
-
-
-
-
-    /* --- دالة بدء مراقبة البيانات (الرسائل، المستخدمين...) --- */
-    function attachDataListeners(userId) {
-        if (dataListeners.length > 0) return; // منع تكرار المراقبة
-
-
-
-
-
-
-
-
-        // 1. مراقبة ملف المستخدم الحالي
-        const userDocRef = doc(usersCollection, userId);
-        const unsubscribeProfile = onSnapshot(userDocRef, (doc) => {
-            if (!doc.exists()) return; 
-            currentUserProfile = { id: userId, ...doc.data() };
-            usersCache[userId] = currentUserProfile;
-            applyCombinedSettings(); // [تم التعديل] يتم التطبيق هنا
-            updateHeaderUI(currentUserProfile);
-            if (pageCache.profile && pageCache.profile.classList.contains('active')) {
-                renderProfilePage(true);
-            }
-            if (pageCache.members && pageCache.members.classList.contains('active')) {
-                renderMembersList();
-            }
-        });
-
-
-
-
-
-
-
-
-        // 2. مراقبة الإعدادات العامة (للمالك)
-        const unsubscribeGlobalSettings = onSnapshot(globalSettingsDoc, (doc) => {
-            globalSettings = doc.exists() ? doc.data() : null;
-            if (currentUserProfile) {
-                applyCombinedSettings(); // [تم التعديل] يتم تطبيق المظهر العام على الجميع فوراً
-            }
-        });
-
-
-
-
-
-
-
-
-        // 3. مراقبة كل المستخدمين (لقائمة الأعضاء)
-        const usersQuery = query(usersCollection, orderBy("name"));
-        const unsubscribeUsers = onSnapshot(usersQuery, (snapshot) => {
-            let listChanged = false;
-            snapshot.docChanges().forEach(change => {
-                listChanged = true;
-                const user = { id: change.doc.id, ...change.doc.data() };
-                if (change.type === 'removed') delete usersCache[user.id];
-                else usersCache[user.id] = user;
-            });
-            // إذا تغيرت قائمة المستخدمين (أو حالة اتصالهم)
-            if (listChanged && pageCache.members && pageCache.members.classList.contains('active')) {
-                renderMembersList(); // أعد رسم قائمة الأعضاء
-            }
-        });
-
-
-
-
-        // [محدث] 4. مراقبة حالة الكتابة للجميع
-        const unsubscribeTyping = onSnapshot(typingStatusDoc, (doc) => {
-            const data = doc.data() || {};
-            const now = Timestamp.now().toMillis();
-            typingUsers = {};
-
-
-
-
-            for (const userId in data) {
-                // تجاهل المستخدم الحالي
-                if (userId === currentUserProfile.id) continue; 
-
-
-
-
-                const timestamp = data[userId].toMillis();
-                // اعتبار المستخدم يكتب إذا كان آخر تحديث له أقل من 5 ثوانٍ
-                if (now - timestamp < 5000) { 
-                    typingUsers[userId] = usersCache[userId]?.name || 'عضو مجهول';
-                }
-            }
-            updateTypingIndicator();
-        });
-
-
-
-
-
-
-
-
-        // 5. مراقبة الرسائل الجديدة
-        let isInitialMessagesLoad = true;
-        const messagesQuery = query(messagesCollection, orderBy("createdAt"), limitToLast(50));
-
-
-
-
-
-
-
-
-        const unsubscribeMessages = onSnapshot(messagesQuery, (snapshot) => {
-            const messagesEl = pageCache.chat.querySelector('.messages');
-            if (!messagesEl) return; 
-
-
-
-
-
-
-
-
-            const isScrolledUp = messagesEl.scrollHeight - messagesEl.clientHeight > messagesEl.scrollTop + 150;
-
-
-
-
-
-
-
-
-            if (snapshot.empty) {
-                 const welcome = messagesEl.querySelector('.welcome-message');
-                 if (welcome) {
-                    welcome.innerHTML = `<h3>لا توجد رسائل بعد</h3><p>ابدأ الدردشة الآن!</p>`;
-                 }
-            } else {
-                 const welcome = messagesEl.querySelector('.welcome-message');
-                 if (welcome) welcome.remove();
-            }
-
-
-
-
-
-
-
-
-            let newMessagesAdded = false;
-            snapshot.docChanges().forEach((change) => {
-                const msgData = { id: change.doc.id, ...change.doc.data() };
-                const msgEl = messagesEl.querySelector(`[data-msg-id="${msgData.id}"]`);
-
-
-
-
-                if (change.type === "added") {
-                    if(!msgEl) {
-                        const newMsgEl = createMessageElement(msgData);
-                        if (newMsgEl) {
-                            messagesEl.appendChild(newMsgEl); 
-                            newMessagesAdded = true;
-                        }
-                    }
-                }
-                if (change.type === "modified" && msgEl) {
-                    const updatedMsgEl = createMessageElement(msgData);
-                    if (updatedMsgEl) msgEl.replaceWith(updatedMsgEl);
-                }
-                // [تم الإصلاح] الآن نتجاهل التعويض التلقائي للرسائل
-                // سيتم حذف الرسالة فقط، ولن يتم إضافة رسالة قديمة بدلاً عنها
-                if (change.type === "removed" && msgEl) {
-                    msgEl.remove();
-                }
-            });
-
-
-
-
-
-
-
-
-            const scrollToBottom = () => {
-                setTimeout(() => { messagesEl.scrollTop = messagesEl.scrollHeight; }, 0);
-            };
-
-
-
-
-
-
-
-
-            if (newMessagesAdded) {
-                if (isInitialMessagesLoad || !isScrolledUp) {
-                    scrollToBottom();
-                }
-            } else if (isInitialMessagesLoad) {
-                scrollToBottom();
-            }
-
-
-
-
-            isInitialMessagesLoad = false; 
-        }, (error) => {
-            console.error("Messages listener failed:", error);
-            showToast("خطأ في تحديث الرسائل.");
-        });
-
-
-
-
-
-
-
-
-        // إضافة كل المراقبات للمصفوفة لإيقافها لاحقاً
-        dataListeners.push(unsubscribeProfile, unsubscribeGlobalSettings, unsubscribeUsers, unsubscribeTyping, unsubscribeMessages);
-    };
-
-
-
-
-
-
-
-
-    /* --- دالة بناء حاويات الصفحات (الدردشة، الأعضاء...) --- */
-    function buildPageCache() {
-        contentEl.innerHTML = '';
-        pageCache.chat = createChatPage();
-        pageCache.members = createMembersPage();
-        pageCache.settings = createSettingsPage();
-        pageCache.profile = createProfilePage();
-        pageCache.view_profile = document.createElement('div');
-        pageCache.view_profile.id = 'view_profile_page';
-        pageCache.view_profile.className = 'page page-container';
-        pageCache.edit_profile = document.createElement('div');
-        pageCache.edit_profile.id = 'edit_profile_page';
-        pageCache.edit_profile.className = 'page';
-        Object.values(pageCache).forEach(p => contentEl.appendChild(p));
-    }
-
-
-
-
-
-
-
-
-    /* --- دالة التنقل بين الصفحات --- */
-    window.openPage = (pageName, btn) => {
-        if (!auth.currentUser || !currentUserProfile) return;
-        if (btn) setActiveNav(btn);
-        preparePageForDisplay(pageName); // تحضير المحتوى قبل العرض
-        Object.values(pageCache).forEach(p => p.classList.remove('active'));
-        const targetPage = pageCache[pageName];
-        if (targetPage) targetPage.classList.add('active');
-
-
-
-
-        // [تم الإصلاح] مسح حالة الرد بشكل أكثر فعالية
-        if (pageName !== 'chat') {
-            clearReplyState();
-        }
-    };
-
-
-
-
-
-
-
-
-    // دالة تحضير المحتوى (تُستخدم لتحديث المحتوى المتغير مثل قائمة الأعضاء)
-    function preparePageForDisplay(pageName) {
-        switch (pageName) {
-            case 'settings': renderSettingsPage(true); break;
-            case 'profile': renderProfilePage(true); break;
-            case 'members': renderMembersList(); break; 
-            case 'edit_profile': renderEditProfilePage(); break;
-        }
-    }
-
-
-
-
-
-
-
-
-    /* --- دوال إنشاء محتوى الصفحات --- */
-    function createChatPage() {
-        const page = document.createElement('div');
-        page.id = 'chat';
-        page.className = 'page chat-page';
-        // [محدث] إضافة زر الإيموجي
-        page.innerHTML = `<div class="messages" id="messages"><div class="welcome-message"><h3>أهلاً بك!</h3><p>جاري تحميل الرسائل...</p></div></div><form class="chat-input" id="messageForm"><div id="replyQuoteContainerWrapper" class="reply-quote-container-wrapper" style="display:none;"><div id="replyQuoteContainer" class="reply-quote-container"><div class="reply-quote-content"><div class="reply-quote-name" id="replyQuoteName"></div><div class="reply-quote-text" id="replyQuoteText"></div></div><button type="button" class="reply-quote-close" id="clearReplyBtn">✖</button></div></div><div id="typingIndicator" class="typing-indicator"></div><button type="button" class="emoji-btn" id="openEmojiPicker">😀</button><input class="msg-input" id="msgInput" type="text" placeholder="اكتب رسالتك..." autocomplete="off" /><button class="send-btn" type="submit" title="إرسال">➤</button></form>`;
-        page.querySelector('#messageForm').addEventListener('submit', sendMessage);
-        page.querySelector('#clearReplyBtn').addEventListener('click', clearReplyState);
-        page.querySelector('#msgInput').addEventListener('input', () => updateTypingStatus(true)); // [جديد] ربط مؤشر الكتابة
-        page.querySelector('#openEmojiPicker').addEventListener('click', showEmojiPickerModal); // [جديد] ربط زر الإيموجي
-        return page;
-    }
-
-
-
-
-    // [محدث] دالة تحديث مؤشر الكتابة
-    function updateTypingIndicator() {
-        if (!pageCache.chat) return;
-        const indicator = pageCache.chat.querySelector('#typingIndicator');
-        const typingNames = Object.values(typingUsers);
-
-
-
-
-        if (typingNames.length === 0) {
-            indicator.style.display = 'none';
-        } else {
-            let text;
-            if (typingNames.length === 1) {
-                text = `${typingNames[0]} يكتب الآن...`;
-            } else if (typingNames.length === 2) {
-                text = `${typingNames[0]} و ${typingNames[1]} يكتبان الآن...`;
-            } else {
-                text = `${typingNames[0]} و ${typingNames.length - 1} آخرون يكتبون الآن...`;
-            }
-            indicator.textContent = text;
-            indicator.style.display = 'block';
-        }
-    }
-
-
-
-
-
-
-
-
-    function createMembersPage() {
-        const page = document.createElement('div');
-        page.id = 'members';
-        page.className = 'page page-container';
-        page.innerHTML = `<div class="search-bar"><input id="searchInput" type="text" placeholder="ابحث عن عضو..."/></div><div id="membersList" class="members-list"></div>`;
-        page.querySelector('#searchInput').addEventListener('input', filterMembersList);
-        return page;
-    }
-
-
-
-
-
-
-
-
-    function createProfilePage() {
-        const page = document.createElement('div');
-        page.id = 'profile';
-        page.className = 'page page-container';
-        return page;
-    }
-
-
-
-
-
-
-
-
-    function createSettingsPage() {
-        const page = document.createElement('div');
-        page.id = 'settings';
-        page.className = 'page page-container';
-        return page;
-    }
-
-
-
-
-    // [جديد] دالة إظهار مودال اختيار الإيموجي
-    function showEmojiPickerModal() {
-        emojiGrid.innerHTML = '';
-        emojiList.forEach(emoji => {
-            const span = document.createElement('span');
-            span.className = 'emoji-item';
-            span.textContent = emoji;
-            span.onclick = () => {
-                const msgInput = document.getElementById('msgInput');
-                msgInput.value += emoji;
-                msgInput.focus();
-                emojiPickerModal.classList.remove('active');
-                updateTypingStatus(true); // تحديث حالة الكتابة بعد إضافة الإيموجي
-            };
-            emojiGrid.appendChild(span);
-        });
-        
-        emojiPickerModalClose.onclick = () => emojiPickerModal.classList.remove('active');
-        emojiPickerModal.classList.add('active');
-    }
-
-
-
-
-
-
-
-
-    /* --- دوال التعامل مع الإجراءات (حذف رسالة، تعديل، رد...) --- */
-
-
-
-
-    // [تم الإصلاح] دالة مسح حالة الرد
-    function clearReplyState() {
-        if (replyingToMessage) {
-            replyingToMessage = null;
-            const container = pageCache.chat?.querySelector('#replyQuoteContainerWrapper');
-            if (container) container.style.display = 'none';
-        }
-    }
-
-
-
-
-
-
-
-
-    // دالة بدء الرد
-    function startReply(msgData) {
-        const sender = usersCache[msgData.senderId] || { name: 'عضو محذوف' };
-        replyingToMessage = { 
-            id: msgData.id, 
-            name: sender.name, 
-            text: msgData.text 
-        };
-        const container = pageCache.chat.querySelector('#replyQuoteContainerWrapper');
-        container.querySelector('#replyQuoteName').textContent = `رد على: ${sender.name}`;
-        container.querySelector('#replyQuoteText').textContent = msgData.text;
-        container.style.display = 'block';
-        pageCache.chat.querySelector('#msgInput').focus();
-        messageActionModal.classList.remove('active'); 
-    }
-
-
-
-
-
-
-
-
-    // دالة بدء التعديل
-    function startEdit(msgData) {
-        editMessageInput.value = msgData.text;
-        editMessageModal.classList.add('active');
-        editMessageInput.focus();
-        messageActionModal.classList.remove('active'); 
-
-
-
-
-
-
-
-
-        const saveHandler = async () => {
-            const newText = editMessageInput.value.trim();
-            if (newText && newText !== msgData.text) {
-                await handleEditMessage(msgData.id, newText);
-            }
-            editMessageModal.classList.remove('active');
-            editMessageSave.removeEventListener('click', saveHandler);
-            editMessageCancel.removeEventListener('click', cancelHandler); // [إصلاح 2] إزالة المستمعين
-        };
-
-
-
-
-
-
-
-
-        const cancelHandler = () => {
-            editMessageModal.classList.remove('active');
-            editMessageSave.removeEventListener('click', saveHandler);
-            editMessageCancel.removeEventListener('click', cancelHandler);
-        };
-
-
-
-
-
-
-
-
-        editMessageSave.addEventListener('click', saveHandler);
-        editMessageCancel.addEventListener('click', cancelHandler);
-    }
-
-
-
-
-
-
-
-
-    // دالة تنفيذ التعديل على Firestore
-    async function handleEditMessage(messageId, newText) {
-        try {
-            await updateDoc(doc(messagesCollection, messageId), { 
-                text: newText,
-                isEdited: true, // إضافة علامة للتعديل
-                editedAt: Timestamp.now()
-            });
-            showToast('تم تعديل الرسالة بنجاح.');
-        } catch (error) {
-            console.error("Error editing message:", error);
-            showToast('فشل تعديل الرسالة.');
-        }
-    }
-
-
-
-
-
-
-
-
-    // [معدل] دالة حذف الرسالة
-    async function handleDeleteMessage(messageId) {
-        messageActionModal.classList.remove('active'); 
-        if(await showConfirmModal('حذف الرسالة', 'هل أنت متأكد من حذف هذه الرسالة بشكل نهائي؟')) {
-            try { await deleteDoc(doc(messagesCollection, messageId)); showToast('تم حذف الرسالة.'); } 
-            catch (error) { console.error("Error deleting message:", error); showToast('فشل حذف الرسالة.'); }
-        }
-    }
-
-
-
-
-
-
-
-
-    // دالة نسخ الرسالة
-    function handleCopyMessage(msgData) {
-        navigator.clipboard.writeText(msgData.text).then(() => {
-            showToast('تم نسخ الرسالة إلى الحافظة.');
-        }).catch(err => {
-            console.error('Failed to copy text: ', err);
-            showToast('فشل نسخ الرسالة.');
-        });
-        messageActionModal.classList.remove('active');
-    }
-
-
-
-
-
-
-
-
-    // دالة بدء إعادة التوجيه
-    function startForward(msgData) {
-        const msgInput = document.getElementById('msgInput');
-        clearReplyState(); // مسح أي حالة رد سابقة
-        msgInput.value = `[إعادة توجيه] ${msgData.text}`;
-        msgInput.focus();
-        messageActionModal.classList.remove('active');
-    }
-
-
-
-
-    // [جديد] دالة إظهار مودال التفاعلات
-    function showReactionModal(msgData) {
-        currentMessageToReact = msgData;
-        reactionGrid.innerHTML = '';
-
-
-
-
-        availableReactions.forEach(emoji => {
-            const button = document.createElement('button');
-            button.className = 'reaction-emoji-btn';
-            button.textContent = emoji;
-            button.onclick = () => handleReaction(msgData.id, emoji);
-            reactionGrid.appendChild(button);
-        });
-
-
-
-
-        reactionModalCancel.onclick = () => reactionModal.classList.remove('active');
-        reactionModal.classList.add('active');
-        messageActionModal.classList.remove('active');
-    }
-
-
-
-
-    // [جديد] دالة تنفيذ التفاعل
-    async function handleReaction(messageId, emoji) {
-        if (!currentUserProfile) return;
-        reactionModal.classList.remove('active');
-
-
-
-
-        const messageRef = doc(messagesCollection, messageId);
-        const userId = currentUserProfile.id;
-
-
-
-
-        try {
-            // جلب الرسالة الحالية لمعرفة التفاعلات
-            const msgDoc = await getDoc(messageRef);
-            if (!msgDoc.exists()) return;
-            const reactions = msgDoc.data().reactions || {};
-
-
-
-
-            let updateNeeded = false;
-
-
-
-
-            // 1. إزالة تفاعل المستخدم من أي إيموجي آخر
-            for (const existingEmoji in reactions) {
-                const userIndex = reactions[existingEmoji].indexOf(userId);
-                if (userIndex !== -1 && existingEmoji !== emoji) {
-                    reactions[existingEmoji].splice(userIndex, 1);
-                    if (reactions[existingEmoji].length === 0) {
-                        delete reactions[existingEmoji];
-                    }
-                    updateNeeded = true;
-                }
-            }
-
-
-
-
-            // 2. إضافة أو إزالة التفاعل الجديد
-            if (reactions[emoji] && reactions[emoji].includes(userId)) {
-                // إزالة التفاعل (لأنه ضغط عليه مرة أخرى)
-                const userIndex = reactions[emoji].indexOf(userId);
-                reactions[emoji].splice(userIndex, 1);
-                if (reactions[emoji].length === 0) {
-                    delete reactions[emoji];
-                }
-                updateNeeded = true;
-            } else {
-                // إضافة التفاعل
-                if (!reactions[emoji]) {
-                    reactions[emoji] = [];
-                }
-                reactions[emoji].push(userId);
-                updateNeeded = true;
-            }
-
-
-
-
-            if (updateNeeded) {
-                await updateDoc(messageRef, { reactions: reactions });
-            }
-
-
-
-
-        } catch (error) {
-            console.error("Error handling reaction:", error);
-            showToast('فشل التفاعل على الرسالة.');
-        }
-    }
-
-
-
-
-
-
-
-
-    // [جديد] إظهار نافذة إجراءات الرسالة
-    function showMessageActionModal(msgData) {
-        const isOwnMessage = msgData.senderId === currentUserProfile.id;
-        const isAdmin = currentUserProfile.badge === 'owner' || currentUserProfile.badge === 'moderator';
-
-
-
-
-
-
-
-
-        // إظهار/إخفاء الأزرار بناءً على الصلاحيات
-        messageActionEdit.style.display = isOwnMessage ? 'block' : 'none';
-        messageActionDelete.style.display = isOwnMessage || isAdmin ? 'block' : 'none';
-
-
-
-
-        // إظهار الخيارات المتاحة للجميع
-        messageActionCopy.style.display = 'block';
-        messageActionForward.style.display = 'block';
-        messageActionReply.style.display = 'block';
-        messageActionReact.style.display = 'block'; // [جديد]
-
-
-
-
-
-
-
-
-
-
-
-
-        // ربط الأوامر
-        messageActionEdit.onclick = () => startEdit(msgData);
-        messageActionReply.onclick = () => startReply(msgData);
-        messageActionReact.onclick = () => showReactionModal(msgData); // [جديد]
-        messageActionCopy.onclick = () => handleCopyMessage(msgData);
-        messageActionForward.onclick = () => startForward(msgData);
-        messageActionDelete.onclick = () => handleDeleteMessage(msgData.id);
-        messageActionCancel.onclick = () => messageActionModal.classList.remove('active');
-
-
-
-
-
-
-
-
-        messageActionModal.classList.add('active');
-    }
-
-
-
-
-
-
-
-
-    async function handleDeleteMember(userId, userName) {
-        if(await showConfirmModal('حذف العضو', `هل أنت متأكد من حذف العضو "${userName}" وكل رسائله بشكل نهائي؟`)) {
-            showLoading(true);
-            try {
-                // حذف رسائل العضو
-                const messagesQuery = query(messagesCollection, where("senderId", "==", userId));
-                const messagesSnapshot = await getDocs(messagesQuery);
-                const batch = writeBatch(db);
-                messagesSnapshot.forEach(doc => batch.delete(doc.ref));
-                // حذف ملف العضو
-                batch.delete(doc(usersCollection, userId));
-                await batch.commit(); // تنفيذ العمليتين معاً
-                showToast(`تم حذف ${userName} وكل رسائله بنجاح.`);
-            } catch (error) {
-                console.error("Error deleting member:", error); showToast('حدث خطأ أثناء حذف العضو.');
-            } finally { showLoading(false); }
-        }
-    }
-
-
-
-
-
-
-
-
-    // إظهار نافذة إجراءات العضو (تقييد، حذف...)
-    function showMemberActionModal(user) {
-        memberActionTitle.textContent = user.name;
-        memberActionMute.style.display = user.isMuted ? 'none' : 'block';
-        memberActionUnmute.style.display = user.isMuted ? 'block' : 'none';
-
-
-
-
-
-
-
-
-        memberActionViewProfile.onclick = () => {
-            memberActionModal.classList.remove('active');
-            viewUserProfile(user.id);
-        };
-        memberActionMute.onclick = () => handleSetMute(user.id, true);
-        memberActionUnmute.onclick = () => handleSetMute(user.id, false);
-        memberActionDelete.onclick = () => {
-            memberActionModal.classList.remove('active'); 
-            handleDeleteMember(user.id, user.name); 
-        };
-        memberActionCancel.onclick = () => memberActionModal.classList.remove('active');
-
-
-
-
-
-
-
-
-        memberActionModal.classList.add('active');
-    }
-
-
-
-
-
-
-
-
-    // دالة تقييد العضو (كتم)
-    async function handleSetMute(userId, isMuted) {
-        try {
-            await updateDoc(doc(usersCollection, userId), { isMuted: isMuted });
-            showToast(isMuted ? 'تم تقييد العضو بنجاح.' : 'تم إلغاء تقييد العضو.');
-            if(usersCache[userId]) {
-                usersCache[userId].isMuted = isMuted; 
-            }
-            renderMembersList(); 
-        } catch (error) {
-            console.error("Error setting mute state:", error);
-            showToast('حدث خطأ.');
-        } finally {
-            memberActionModal.classList.remove('active');
-        }
-    }
-
-
-
-
-
-
-
-
-    /* --- === [!!] إصلاح الطلب 3: ترتيب الأعضاء [!!] === --- */
-    function renderMembersList() {
-        if (!pageCache.members) return;
-        const membersListEl = pageCache.members.querySelector('#membersList');
-        membersListEl.innerHTML = ''; 
-        const fragment = document.createDocumentFragment();
-        const isAdmin = currentUserProfile.badge === 'owner' || currentUserProfile.badge === 'moderator';
-
-
-
-
-
-
-
-
-        // 1. تحويل الكاش إلى مصفوفة وحساب حالة الاتصال الحقيقية
-        const allUsers = Object.values(usersCache).map(user => {
-            const minutesAgo = user.lastSeen ? (new Date() - user.lastSeen.toDate()) / 60000 : Infinity;
-            const trulyOnline = user.isOnline && minutesAgo < 2; // متصل إذا كان isOnline=true وآخر ظهور أقل من دقيقتين
-            return { ...user, trulyOnline }; // إضافة الحالة للمستخدم
-        });
-
-
-
-
-
-
-
-
-        // 2. ترتيب المصفوفة: المتصلون أولاً، ثم حسب آخر ظهور (الأحدث أولاً)
-        allUsers.sort((a, b) => {
-            // 1. Online status (trulyOnline first)
-            if (a.trulyOnline && !b.trulyOnline) return -1; 
-            if (!a.trulyOnline && b.trulyOnline) return 1;  
-
-
-
-
-            // 2. Last Seen (Descending - most recent first)
-            // نطبق هذا فقط إذا كانت حالة الاتصال متساوية (كلاهما متصل أو كلاهما غير متصل)
-            const aTime = a.lastSeen ? a.lastSeen.toMillis() : 0;
-            const bTime = b.lastSeen ? b.lastSeen.toMillis() : 0;
-            if (bTime !== aTime) return bTime - aTime; // Descending (الأحدث أولاً)
-
-
-
-
-            // 3. Name (Alphabetical)
-            return a.name.localeCompare(b.name); 
-        });
-
-
-
-
-
-
-
-
-        // 3. عرض القائمة المرتبة
-        allUsers.forEach(user => {
-            const memberItemWrapper = document.createElement('div');
-            memberItemWrapper.className = 'member-item-wrapper';
-            memberItemWrapper.dataset.userId = user.id;
-
-
-
-
-
-
-
-
-            const memberItem = document.createElement('div');
-            memberItem.className = 'member-item';
-
-
-
-
-
-
-
-
-            const muteIcon = user.isMuted ? ' 🔇' : '';
-            // نستخدم القيمة التي حسبناها مسبقاً
-            const statusClass = user.trulyOnline ? 'online' : '';
-            const statusText = user.trulyOnline 
-                ? 'متصل الآن' 
-                : (user.lastSeen ? formatTimeAgo(user.lastSeen) : 'غير متصل');
-
-
-
-
-
-
-
-
-            memberItem.innerHTML = `
-                <img class="member-avatar" src="${user.avatar}" alt="${user.name}" />
-                <div class="member-info">
-                    <h3 class="member-name">${user.name}${muteIcon}</h3>
-                    <div class="member-status">${statusText}</div>
+        <!-- Navbar -->
+        <nav class="glass-nav sticky top-0">
+            <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+                <button onclick="toggleAdminModal()" class="text-2xl font-black text-white flex items-center gap-2 hover:text-teal-400">
+                    <i class="fas fa-plane-departure text-teal-400"></i> <span id="companyName">Wolf TraVal</span>
+                </button>
+                <div class="hidden md:flex items-center gap-6 text-sm font-semibold">
+                    <a href="#" class="hover:text-teal-400">الرئيسية</a>
+                    <a href="#trips-section" class="hover:text-teal-400">الرحلات</a>
+                    <a href="${FB_PAGE}" target="_blank" class="hover:text-teal-400">فيسبوك</a>
                 </div>
-                <div class="status-dot ${statusClass}"></div>
-            `;
-
-
-
-
-
-
-
-
-            // إذا كان المستخدم الحالي أدمن AND العضو الظاهر ليس هو نفسه
-            if (isAdmin && user.id !== currentUserProfile.id) {
-                memberItem.onclick = () => showMemberActionModal(user); // إظهار نافذة الإجراءات
-            } else {
-                memberItem.onclick = () => viewUserProfile(user.id); // إظهار بروفايل العضو
-            }
-
-
-
-
-
-
-
-
-            memberItemWrapper.appendChild(memberItem);
-            fragment.appendChild(memberItemWrapper);
-        });
-        /* --- === نهاية إصلاح الطلب 3 === --- */
-
-
-
-
-
-
-
-
-        membersListEl.appendChild(fragment);
-        filterMembersList(); // تطبيق فلتر البحث
-    }
-
-
-
-
-
-
-
-
-    // دالة فلترة قائمة الأعضاء (البحث)
-    function filterMembersList() {
-        if (!pageCache.members) return;
-        const searchInput = pageCache.members.querySelector('#searchInput');
-        const searchTerm = searchInput.value.toLowerCase().trim();
-        const membersListEl = pageCache.members.querySelector('#membersList');
-
-
-
-
-
-
-
-
-        membersListEl.querySelectorAll('.member-item-wrapper').forEach(wrapper => {
-            const nameEl = wrapper.querySelector('.member-name');
-            if (nameEl) {
-                const name = nameEl.textContent.toLowerCase();
-                wrapper.style.display = (searchTerm && !name.includes(searchTerm)) ? 'none' : 'flex';
-            }
-        });
-    }
-
-
-
-
-
-
-
-
-    /* --- دالة عرض صفحة البروفايل --- */
-    function renderProfilePage(rerender = false) {
-        if (!pageCache.profile || !currentUserProfile) return;
-        if (rerender || !pageCache.profile.innerHTML) {
-            pageCache.profile.innerHTML = createUserProfileViewHTML(currentUserProfile, true);
-            pageCache.profile.querySelector('#editProfileBtn').onclick = () => openPage('edit_profile');
-        }
-    }
-
-
-
-
-
-
-
-
-    /* --- دالة عرض صفحة الإعدادات --- */
-    function renderSettingsPage(rerender = false) {
-        if (!pageCache.settings || !rerender) return;
-        const settings = { ...defaultSettings, ...(currentUserProfile.settings) };
-        let ownerSectionHTML = '';
-        if (currentUserProfile.badge === 'owner') {
-            /* --- === [!!] إصلاح الطلب 2: تغيير نص الزر [!!] === --- */
-            ownerSectionHTML = `<div class="settings-section"><h2 class="settings-section-title">👑 أدوات المالك</h2><div class="settings-option"><button id="applyToAllBtn" class="form-btn-confirm" style="flex:1;">تطبيق مظهري على الجميع فوراً</button></div><div class="settings-option"><button id="resetAllBtn" class="form-btn-cancel" style="flex:1;">إلغاء المظهر العام</button></div><div class="settings-option"><button id="clearChatBtn" class="settings-btn-themed" style="background: var(--danger-color); flex:1;">مسح الشات بالكامل</button></div></div>`;
-        }
-
-
-
-
-
-
-
-
-        const bubblePaddingText = settings.bubblePadding == 1 ? 'صغير' : (settings.bubblePadding == 2 ? 'وسط' : 'كبير');
-
-
-
-
-
-
-
-
-        pageCache.settings.innerHTML = `<div class="settings-section"><h2 class="settings-section-title">المظهر العام</h2><div class="settings-option"><span class="label">الوضع الليلي</span><input type="checkbox" id="darkModeToggle" ${settings.darkMode ? 'checked' : ''}/></div><div class="settings-option"><span class="label">لون فقاعاتي</span><input type="color" class="settings-input-color" id="sentBubbleColor" value="${settings.sentBubbleBg}"></div><div class="settings-option"><span class="label">لون فقاعات الآخرين</span><input type="color" class="settings-input-color" id="recvBubbleColor" value="${settings.recvBubbleBg}"></div>
-        
-        <div class="settings-option">
-            <span class="label">حجم الخط</span>
-            <input type="range" id="fontSizeRange" min="12" max="20" value="${settings.fontSize}" style="flex:1" />
-            <span id="fontSizeValue" style="min-width: 40px; text-align: left;">${settings.fontSize}px</span>
-            <button class="settings-btn-themed save-btn" id="saveFontSize" title="حفظ">💾</button>
-        </div>
-        
-        <div class="settings-option">
-            <span class="label">حجم بطاقة الرسالة</span>
-            <input type="range" id="bubblePaddingRange" min="1" max="3" value="${settings.bubblePadding}" style="flex:1" />
-            <span id="bubblePaddingValue" style="min-width: 40px; text-align: left;">${bubblePaddingText}</span>
-            <button class="settings-btn-themed save-btn" id="saveBubblePadding" title="حفظ">💾</button>
-        </div>
-
-
-
-
-
-
-
-
-        </div><div class="settings-section"><h2 class="settings-section-title">خلفية الدردشة</h2><div class="background-grid" id="backgroundGrid">${backgroundImages.map(img => `<div class="background-option" style="background-image: url(${img.thumb})" data-url="${img.full}"></div>`).join('')}</div><div class="settings-option" style="padding-top: 16px;"><label for="bgUpload" class="settings-btn-themed" style="flex:1; text-align:center; cursor:pointer; background: var(--accent-color);">رفع خلفية خاصة</label><input type="file" id="bgUpload" accept="image/*" style="display:none;"></div><div class="settings-option" style="padding-top: 8px;"><button class="settings-btn-themed" id="resetBgBtn" style="background: var(--danger-color); flex:1;">مسح الخلفية</button></div></div>${ownerSectionHTML}<div class="settings-section"><h2 class="settings-section-title">وسام الإدارة</h2><div class="settings-option"><!-- WARNING: The passwords below are visible to any user who inspects the page code. This is a major security risk. --><input type="password" id="badgePass" class="auth-input" placeholder="أدخل كلمة المرور" style="flex:1"/><button id="badgeSaveBtn" class="settings-btn-themed">حفظ</button></div></div><div class="settings-section"><h2 class="settings-section-title">إعادة الضبط</h2><div class="settings-option"><button id="resetAllSettings" class="settings-btn-themed" style="background: var(--danger-color); flex:1;">إعادة ضبط كل إعداداتي</button></div></div>`;
-
-
-
-
-
-
-
-
-        addSettingsEventListeners(); // ربط الأوامر بالأزرار الجديدة
-    }
-
-
-
-
-
-
-
-
-    /* --- دوال صفحات تسجيل الدخول وإنشاء بروفايل جديد --- */
-    const showWelcomePage = () => {
-      contentEl.innerHTML = `<div class="auth-page"><h1 class="auth-title">أهلاً بك في شات شهاب</h1><div class="auth-card" style="text-align:center;"><p>ادخل للدردشة مباشرة مع الأصدقاء</p><button id="loginBtn" class="form-btn-confirm" style="width:100%;">ادخل الآن</button></div></div>`;
-      document.getElementById('loginBtn').addEventListener('click', handleLogin);
-    };
-
-
-
-
-
-
-
-
-    // إظهار صفحة إكمال البروفايل للمستخدم الجديد
-    const showNewUserProfilePage = (user) => {
-      contentEl.innerHTML = ''; 
-      const title = 'أكمل ملفك الشخصي';
-      const buttonText = 'دخول الدردشة';
-      /* --- إصلاح 2: استخدام الدالة الجديدة لإظهار أول صورة --- */
-      const p = { name: '', avatar: getNextAvatar('male'), gender: 'male', location: '' };
-
-
-
-
-
-
-
-
-      const formContainer = document.createElement('div');
-
-
-
-
-
-
-
-
-      formContainer.innerHTML = `<div class="auth-page"><h1 class="auth-title">${title}</h1><form class="auth-card" id="profileForm">
-        
-        <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
-          <label for="avatarUpload">
-            <img class="signup-avatar" id="avatarPreview" src="${p.avatar}" alt="Avatar" title="اضغط لرفع صورة" />
-          </label>
-          <p class="avatar-note">اضغط على الصورة لرفع صورة من جهازك</p>
-          <input type="file" id="avatarUpload" accept="image/*" style="display:none;">
-          <input type="hidden" name="avatar" value="${p.avatar}">
-          <button type="button" class="settings-btn-themed" id="randomAvatarBtn" style="margin-top: 8px;">صورة رمزية تالية</button>
-        </div>
-
-
-
-
-
-
-
-
-        <div class="auth-input-group" style="width:100%;"><label for="nameInput">اسمك في الشات</label><input type="text" id="nameInput" name="name" class="auth-input" value="${p.name}" placeholder="اكتب اسمك هنا..." /></div>
-        <div class="auth-input-group" style="width:100%;"><label for="locationInput">العنوان</label><input type="text" id="locationInput" name="location" class="auth-input" value="${p.location || ''}" placeholder="مثال: القاهرة، مصر" /></div>
-        <div class="gender-select"><div class="gender-option ${p.gender === 'male' ? 'selected' : ''}" data-gender="male">ذكـر</div><div class="gender-option ${p.gender === 'female' ? 'selected' : ''}" data-gender="female">أنثـى</div></div>
-        <p class="error-message" id="setupError"></p>
-        <div class="form-btn-group"><button type="submit" class="form-btn-confirm">${buttonText}</button></div>
-      </form></div>`;
-
-
-
-
-
-
-
-
-      contentEl.appendChild(formContainer);
-      const form = document.getElementById('profileForm');
-      attachProfileFormListeners(form, false); // ربط الأوامر (رفع الصورة، اختيار الجنس)
-      form.addEventListener('submit', (e) => handleProfileSave(e, user, false));
-    };
-
-
-
-
-
-
-
-
-    // إظهار صفحة تعديل البروفايل
-    function renderEditProfilePage() {
-        if (!pageCache.edit_profile || !currentUserProfile) return;
-        const p = currentUserProfile;
-        const title = 'تعديل الملف الشخصي';
-        const buttonText = 'حفظ التعديلات';
-
-
-
-
-
-
-
-
-        pageCache.edit_profile.innerHTML = `<div class="auth-page"><h1 class="auth-title">${title}</h1><form class="auth-card" id="editProfileForm">
-        
-        <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
-          <label for="editAvatarUpload">
-            <img class="signup-avatar" id="editAvatarPreview" src="${p.avatar}" alt="Avatar" title="اضغط لتغيير الصورة" />
-          </label>
-          <p class="avatar-note">اضغط على الصورة لرفع صورة من جهازك</p>
-          <input type="file" id="editAvatarUpload" accept="image/*" style="display:none;">
-          <input type="hidden" name="avatar" value="${p.avatar}">
-          <button type="button" class="settings-btn-themed" id="editRandomAvatarBtn" style="margin-top: 8px;">صورة رمزية تالية</button>
-        </div>
-
-
-
-
-
-
-
-
-        <div class="auth-input-group" style="width:100%;"><label for="editNameInput">اسمك في الشات</label><input type="text" id="editNameInput" name="name" class="auth-input" value="${p.name}" placeholder="اكتب اسمك هنا..." /></div>
-        <div class="auth-input-group" style="width:100%;"><label for="editLocationInput">العنوان</label><input type="text" id="editLocationInput" name="location" class="auth-input" value="${p.location || ''}" placeholder="مثال: القاهرة، مصر" /></div>
-        <div class="gender-select"><div class="gender-option ${p.gender === 'male' ? 'selected' : ''}" data-gender="male">ذكـر</div><div class="gender-option ${p.gender === 'female' ? 'selected' : ''}" data-gender="female">أنثـى</div></div>
-        <p class="error-message" id="editError"></p>
-        <div class="form-btn-group"><button type="button" class="form-btn-cancel">إلغاء</button><button type="submit" class="form-btn-confirm">${buttonText}</button></div>
-        </form></div>`;
-
-
-
-
-
-
-
-
-        const form = pageCache.edit_profile.querySelector('#editProfileForm');
-        form.querySelector('.form-btn-cancel').onclick = () => openPage('profile');
-        attachProfileFormListeners(form, true); // ربط الأوامر (رفع الصورة، اختيار الجنس)
-        form.addEventListener('submit', (e) => handleProfileSave(e, auth.currentUser, true));
-    }
-
-
-
-
-
-
-
-
-    // [تم التعديل] دالة ربط الأوامر بصفحة البروفايل (لرفع الصور واختيار الجنس)
-    function attachProfileFormListeners(form, isEditing = false) {
-      const avatarUploadInput = form.querySelector(isEditing ? '#editAvatarUpload' : '#avatarUpload');
-      const avatarPreview = form.querySelector(isEditing ? '#editAvatarPreview' : '#avatarPreview');
-      const randomAvatarBtn = form.querySelector(isEditing ? '#editRandomAvatarBtn' : '#randomAvatarBtn');
-      const avatarHiddenInput = form.querySelector('[name="avatar"]');
-
-
-
-
-
-
-
-
-      randomAvatarBtn.textContent = 'صورة رمزية تالية';
-
-
-
-
-      // [تم التعديل] عند اختيار ملف صورة للرفع
-      avatarUploadInput.addEventListener('change', async (event) => {
-          const file = event.target.files[0];
-          if (!file) return;
-
-
-
-
-          showLoading(true);
-          try {
-              // 1. ضغط الصورة لتقليل حجمها قبل الرفع
-              const compressedDataUrl = await compressImage(file, 400, 0.8);
-              // 2. تحويل الصورة المضغوطة إلى ملف Blob للرفع
-              const blob = await (await fetch(compressedDataUrl)).blob();
-              // 3. رفع الملف إلى Cloudinary
-              const imageUrl = await uploadToCloudinary(blob);
-
-
-
-
-              if (imageUrl) {
-                  avatarPreview.src = imageUrl;
-                  avatarHiddenInput.value = imageUrl;
-                  randomAvatarBtn.style.display = 'none';
-              } else {
-                  avatarUploadInput.value = ''; // مسح الإدخال في حالة الفشل
-              }
-          } catch (error) {
-              console.error("Image processing/upload failed:", error);
-              showToast("حدث خطأ أثناء معالجة الصورة.");
-          } finally {
-              showLoading(false);
-          }
-      });
-
-
-
-
-
-
-
-
-      const updateAvatar = () => {
-          const gender = form.querySelector('.gender-option.selected').dataset.gender;
-          const newAvatar = getNextAvatar(gender); 
-          avatarPreview.src = newAvatar;
-          avatarHiddenInput.value = newAvatar;
-          randomAvatarBtn.style.display = 'block'; 
-      };
-
-
-
-
-
-
-
-
-      randomAvatarBtn.addEventListener('click', async () => {
-          randomAvatarBtn.disabled = true;
-          randomAvatarBtn.textContent = '...';
-          await new Promise(resolve => setTimeout(resolve, 10)); 
-          try {
-              updateAvatar();
-              await new Promise((resolve) => {
-                  avatarPreview.onload = resolve;
-                  avatarPreview.onerror = resolve;
-              });
-          } finally {
-              randomAvatarBtn.disabled = false;
-              randomAvatarBtn.textContent = 'صورة رمزية تالية';
-          }
-      });
-
-
-
-
-
-
-
-
-      form.querySelectorAll('.gender-option').forEach(option => {
-          option.addEventListener('click', async () => { 
-              form.querySelectorAll('.gender-option').forEach(opt => opt.classList.remove('selected'));
-              option.classList.add('selected');
-              randomAvatarBtn.disabled = true;
-              randomAvatarBtn.textContent = '...';
-              await new Promise(resolve => setTimeout(resolve, 10));
-              try {
-                  updateAvatar(); 
-                  await new Promise((resolve) => { 
-                      avatarPreview.onload = resolve;
-                      avatarPreview.onerror = resolve;
-                  });
-              } finally {
-                  randomAvatarBtn.disabled = false;
-                  randomAvatarBtn.textContent = 'صورة رمزية تالية';
-              }
-          });
-      });
-    }
-
-
-
-
-
-
-
-
-    /* --- دالة حفظ البروفايل (جديد أو تعديل) --- */
-    const handleProfileSave = async (event, user, isEditing = false) => {
-      event.preventDefault();
-      const form = event.target;
-      const name = form.querySelector('[name="name"]').value.trim();
-      if (!name) { 
-        form.querySelector('.error-message').textContent = "الرجاء إدخال اسم.";
-        form.querySelector('.error-message').style.display = 'block'; 
-        return;
-      }
-      showLoading(true);
-      form.querySelector('.error-message').style.display = 'none';
-
-
-
-
-
-
-
-
-      try {
-        const userRef = doc(usersCollection, user.uid);
-        const data = { 
-            name, 
-            gender: form.querySelector('.gender-option.selected').dataset.gender, 
-            location: form.querySelector('[name="location"]').value.trim(),
-            avatar: form.querySelector('[name="avatar"]').value // الصورة الآن هي رابط URL
-        };
-        
-        if (isEditing) {
-            await updateDoc(userRef, data);
-            showToast("تم حفظ التعديلات بنجاح!");
-            openPage('profile'); 
-        } else {
-            data.badge = null; 
-            data.settings = globalSettings ? { ...defaultSettings, ...globalSettings } : defaultSettings; 
-            data.createdAt = Timestamp.now();
-            data.isMuted = false; 
-            data.isOnline = true;
-            data.lastSeen = Timestamp.now();
-            await setDoc(userRef, data);
-            await initializeAppState(user); 
-        }
-      } catch (error) {
-        console.error("Profile save failed:", error); 
-        form.querySelector('.error-message').textContent = "فشل حفظ البيانات.";
-      } finally {
-        showLoading(false);
-      }
-    };
-
-
-
-
-
-
-
-
-    // دالة عرض بروفايل مستخدم آخر
-    window.viewUserProfile = (userId) => {
-        const user = usersCache[userId];
-        if (user && pageCache.view_profile) {
-            pageCache.view_profile.innerHTML = createUserProfileViewHTML(user, false);
-            pageCache.view_profile.querySelector('.back-btn').onclick = () => openPage('members');
-            Object.values(pageCache).forEach(p => p.classList.remove('active'));
-            pageCache.view_profile.classList.add('active');
-        }
-    }
-
-
-
-
-
-
-
-
-    // دالة إنشاء كود العرض للبروفايل
-    function createUserProfileViewHTML(user, isOwnProfile = false) {
-        const buttonsHTML = isOwnProfile 
-            ? `<button class="profile-edit-btn" id="editProfileBtn" style="margin-top: 16px;">تعديل الملف الشخصي</button>`
-            : `<button class="form-btn-confirm back-btn">العودة للأعضاء</button>`;
-        return `<div class="card-section"><img class="view-profile-avatar" src="${user.avatar}" alt="${user.name}" /><h2 class="profile-name">${user.name}</h2></div><div class="profile-details-section"><div class="profile-detail-item"><span class="label">الجنس</span><span class="value">${user.gender === 'male' ? 'ذكر' : 'أنثى'}</span></div><div class="profile-detail-item"><span class="label">العنوان</span><span class="value">${user.location || 'غير محدد'}</span></div></div>${buttonsHTML}`;
-    }
-
-
-
-
-
-
-
-
-    /* --- دالة ربط الأوامر بأزرار صفحة الإعدادات --- */
-    function addSettingsEventListeners() {
-        const page = pageCache.settings;
-        if (!page) return;
-
-
-
-
-
-
-
-
-        const updateSettings = async (newSetting) => {
-            if (!currentUserProfile) return; 
-            const updatedSettings = { ...defaultSettings, ...(currentUserProfile.settings || {}), ...newSetting };
-            try { 
-                currentUserProfile.settings = updatedSettings; 
-                applyCombinedSettings(); 
-                await updateDoc(doc(usersCollection, currentUserProfile.id), { settings: updatedSettings }); 
-            } 
-            catch (error) { console.error("Failed to save settings:", error); }
-        };
-
-
-
-
-
-
-
-
-        // --- ربط أوامر المالك ---
-        if (currentUserProfile.badge === 'owner') {
-            page.querySelector('#applyToAllBtn').addEventListener('click', async () => { 
-                showLoading(true); 
-                try { 
-                    const settingsToApply = { ...defaultSettings, ...(currentUserProfile.settings || {}) };
-                    await setDoc(globalSettingsDoc, settingsToApply); 
-                    showToast("تم حفظ المظهر العام وتطبيقه على الجميع فوراً!"); 
-                } catch (e) { console.error(e); showToast("حدث خطأ."); } finally { showLoading(false); } 
-            });
-
-
-
-
-
-
-
-
-            page.querySelector('#resetAllBtn').addEventListener('click', async () => { 
-                showLoading(true); 
-                try { 
-                    await deleteDoc(globalSettingsDoc); 
-                    showToast("تم إلغاء المظهر العام. سيتم تطبيق الإعدادات الشخصية/الافتراضية."); 
-                } catch (e) { console.error(e); showToast("حدث خطأ."); } finally { showLoading(false); } 
-            });
-
-
-
-
-
-
-
-
-            page.querySelector('#clearChatBtn').addEventListener('click', async () => {
-                if(await showConfirmModal("مسح الشات بالكامل", "هل أنت متأكد من حذف جميع رسائل الشات للجميع بشكل نهائي؟")){
-                    showLoading(true);
-                    try {
-                        const allMessages = await getDocs(query(messagesCollection));
-                        const batch = writeBatch(db);
-                        allMessages.forEach(doc => batch.delete(doc.ref)); 
-                        await batch.commit();
-                        showToast("تم مسح الشات بنجاح!");
-                    } catch(e) { console.error(e); showToast("حدث خطأ أثناء مسح الشات."); }
-                    finally { showLoading(false); }
-                }
-            });
-        }
-
-
-
-
-
-
-
-
-        // [تم التعديل] رفع خلفية خاصة عبر Cloudinary
-        const bgUploadInput = page.querySelector('#bgUpload');
-        bgUploadInput.addEventListener('change', async (event) => {
-            const file = event.target.files[0];
-            if (!file) return;
-            showLoading(true);
-            try {
-                const compressedDataUrl = await compressImage(file, 1200, 0.7); 
-                const blob = await (await fetch(compressedDataUrl)).blob();
-                const imageUrl = await uploadToCloudinary(blob);
-                if (imageUrl) {
-                    updateSettings({ chatBackground: imageUrl }); 
-                    page.querySelectorAll('.background-option').forEach(opt => opt.classList.remove('selected'));
-                    showToast("تم تعيين الخلفية الجديدة.");
-                }
-                bgUploadInput.value = '';
-            } catch (error) {
-                console.error("BG upload failed:", error);
-                showToast("فشل رفع الخلفية.");
-            } finally {
-                showLoading(false);
-            }
-        });
-
-
-
-
-
-
-
-
-        page.querySelector('#darkModeToggle').addEventListener('change', (e) => updateSettings({ darkMode: e.target.checked }));
-        page.querySelector('#sentBubbleColor').addEventListener('change', (e) => updateSettings({ sentBubbleBg: e.target.value }));
-        page.querySelector('#recvBubbleColor').addEventListener('change', (e) => updateSettings({ recvBubbleBg: e.target.value }));
-
-
-
-
-
-
-
-
-        const fontSizeRange = page.querySelector('#fontSizeRange');
-        fontSizeRange.addEventListener('input', (e) => { 
-            page.querySelector('#fontSizeValue').textContent = `${e.target.value}px`; 
-        });
-        page.querySelector('#saveFontSize').addEventListener('click', () => {
-            updateSettings({ fontSize: parseInt(fontSizeRange.value) }); 
-            showToast('تم حفظ حجم الخط.');
-        });
-
-
-
-
-
-
-
-
-        const bubblePaddingRange = page.querySelector('#bubblePaddingRange');
-        bubblePaddingRange.addEventListener('input', (e) => { 
-            const text = e.target.value == 1 ? 'صغير' : (e.target.value == 2 ? 'وسط' : 'كبير');
-            page.querySelector('#bubblePaddingValue').textContent = text; 
-        });
-        page.querySelector('#saveBubblePadding').addEventListener('click', () => {
-            updateSettings({ bubblePadding: parseInt(bubblePaddingRange.value) }); 
-            showToast('تم حفظ حجم البطاقة.');
-        });
-
-
-
-
-
-
-
-
-        const settings = { ...defaultSettings, ...(currentUserProfile.settings) };
-        page.querySelectorAll('.background-option').forEach(el => {
-            if(settings.chatBackground === el.dataset.url) el.classList.add('selected');
-            el.addEventListener('click', () => {
-                 page.querySelectorAll('.background-option').forEach(opt => opt.classList.remove('selected'));
-                 el.classList.add('selected');
-                 updateSettings({ chatBackground: el.dataset.url })
-                 showToast("تم تطبيق الخلفية.");
-            });
-        });
-
-
-
-
-
-
-
-
-        page.querySelector('#resetBgBtn').addEventListener('click', () => { 
-            page.querySelectorAll('.background-option').forEach(opt => opt.classList.remove('selected')); 
-            updateSettings({ chatBackground: '' }); 
-            showToast("تم مسح الخلفية.");
-        });
-
-
-
-
-
-
-
-
-        page.querySelector('#badgeSaveBtn').addEventListener('click', async () => {
-            const pass = page.querySelector('#badgePass').value;
-            let newBadge = null;
-            let isValidPass = false;
-            if (pass === '1532') { newBadge = 'owner'; isValidPass = true; } 
-            else if (pass === '2026') { newBadge = 'moderator'; isValidPass = true; } 
-            else if (pass === '') { newBadge = null; isValidPass = true; }
-
-
-
-
-
-
-
-
-            if (!isValidPass) {
-                showToast('كلمة المرور غير صحيحة.');
-                page.querySelector('#badgePass').value = '';
-                return;
-            }
-            try { 
-                await updateDoc(doc(usersCollection, currentUserProfile.id), { badge: newBadge }); 
-                showToast(newBadge ? 'تم منح الوسام بنجاح!' : 'تم إزالة الوسام.');
-                currentUserProfile.badge = newBadge; 
-                renderSettingsPage(true); 
-            } catch(error){ showToast('فشل الحفظ!'); }
-        });
-
-
-
-
-
-
-
-
-        page.querySelector('#resetAllSettings').addEventListener('click', async () => {
-             if(await showConfirmModal("إعادة ضبط الإعدادات", "هل أنت متأكد من إعادة ضبط كل إعداداتك الشخصية؟")){
-                try { 
-                    await updateSettings(defaultSettings); 
-                    showToast('تمت إعادة ضبط إعداداتك الشخصية!'); 
-                    renderSettingsPage(true); 
-                } catch(error) { showToast('فشل إعادة الضبط!'); }
-             }
-        });
-    }
-
-
-
-
-
-
-
-
-    /* --- [تم الإصلاح] دالة إرسال الرسالة --- */
-    async function sendMessage(event) {
-        event.preventDefault();
-
-
-
-
-        if (currentUserProfile.isMuted) {
-            showToast("لا يمكنك الإرسال، لقد تم تقييد حسابك.");
-            return;
-        }
-
-
-
-
-        const msgInput = document.getElementById('msgInput');
-        const text = msgInput.value.trim();
-
-
-
-
-        if (text && currentUserProfile) {
-            msgInput.value = ''; // مسح حقل الإدخال فوراً
-            updateTypingStatus(false); // إيقاف مؤشر الكتابة فوراً
-
-
-
-
-            const messageData = { 
-                text, 
-                senderId: currentUserProfile.id, 
-                createdAt: Timestamp.now() 
-            };
-
-
-
-
-            if (replyingToMessage) {
-                messageData.replyToId = replyingToMessage.id;
-                messageData.replyToName = replyingToMessage.name;
-                messageData.replyToText = replyingToMessage.text;
-            }
-            
-            // [تم الإصلاح] مسح حالة الرد مباشرة بعد تجهيز الرسالة
-            clearReplyState();
-
-
-
-
-            try { 
-                await addDoc(messagesCollection, messageData); 
-            } catch (error) { 
-                // [تم الإصلاح] تم إزالة إشعار الفشل لتجنب الإزعاج
-                console.error("Error sending message:", error);
-                // لا نرجع النص القديم، نعتمد على أن المحاولة ستنجح في الخلفية
-            }
-            
-            // [تم الإصلاح] إعادة التركيز على الحقل للحفاظ على الكيبورد
-            setTimeout(() => msgInput.focus(), 0);
-        }
-    }
-
-
-
-
-
-
-
-
-    /* --- دالة إنشاء عنصر الرسالة في الشات --- */
-    function createMessageElement(msgData) {
-        const createdAtDate = (msgData.createdAt?.toDate) ? msgData.createdAt.toDate() : new Date();
-        const sender = usersCache[msgData.senderId]; 
-        if(!sender) {
-            console.warn(`Sender not found in cache: ${msgData.senderId}`);
-            return null; 
-        }
-        const isSent = msgData.senderId === currentUserProfile.id;
-        const row = document.createElement('div');
-        row.className = `message-row ${isSent ? 'sent' : 'recv'}`;
-        row.dataset.msgId = msgData.id;
-        const time = createdAtDate.toLocaleTimeString('ar-EG', { hour: 'numeric', minute: '2-digit' });
-
-
-
-
-
-
-
-
-        let badgeHTML = '';
-        if (sender.badge === 'owner') badgeHTML = `👑`;
-        else if (sender.badge === 'moderator') badgeHTML = `🛡️`;
-
-
-
-
-
-
-
-
-        const muteIcon = sender.isMuted ? ' 🔇' : ''; 
-        const editedTag = msgData.isEdited ? ' (معدلة)' : '';
-
-
-
-
-
-
-
-
-        // بناء كود اقتباس الرد
-        let replyQuoteHTML = '';
-        if (msgData.replyToId) {
-            replyQuoteHTML = `
-                <div class="reply-quote">
-                    <div class="reply-quote-name">${msgData.replyToName}</div>
-                    <div class="reply-quote-text">${msgData.replyToText}</div>
+                <div id="adminButtonContainer" class="hidden md:flex items-center">
+                    <button onclick="toggleTripModal()" class="bg-white/10 hover:bg-white/20 border border-white/20 text-white px-4 py-2 rounded-lg text-sm">
+                        <i class="fas fa-plus ml-1"></i> إضافة رحلة
+                    </button>
                 </div>
-            `;
-        }
+                <div class="md:hidden">
+                     <button onclick="toggleMobileMenu()" class="text-white text-xl"><i class="fas fa-bars"></i></button>
+                </div>
+            </div>
+        </nav>
+        
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="mobile-menu hidden fixed w-4/5 md:w-1/3 bg-gray-900/95 backdrop-blur-md z-40 p-6 shadow-2xl md:hidden">
+            <div class="flex justify-between items-center mb-8">
+                <span class="text-xl font-bold text-white">Wolf TraVal</span>
+                <button onclick="toggleMobileMenu()" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
+            </div>
+            <nav class="flex flex-col space-y-4 text-lg">
+                <a href="#" class="text-gray-200 hover:text-teal-400 border-b border-gray-700 pb-2" onclick="toggleMobileMenu()">الرئيسية</a>
+                <a href="#trips-section" class="text-gray-200 hover:text-teal-400 border-b border-gray-700 pb-2" onclick="toggleMobileMenu()">الرحلات</a>
+                <a href="${FB_PAGE}" target="_blank" class="text-gray-200 hover:text-teal-400 pb-2" onclick="toggleMobileMenu()">فيسبوك</a>
+            </nav>
+            <div id="adminButtonContainerMobile" class="mt-8 hidden">
+                 <button onclick="toggleTripModal(); toggleMobileMenu();" class="w-full bg-teal-600 hover:bg-teal-700 text-white py-2 rounded-lg"><i class="fas fa-plus ml-1"></i> إضافة رحلة</button>
+            </div>
+        </div>
 
+        <!-- Hero -->
+        <header class="flex-grow flex items-center justify-center text-center px-4 py-16 md:py-20">
+            <div class="max-w-3xl">
+                <span class="inline-block py-1 px-3 rounded-full bg-teal-500/20 border border-teal-500/50 text-teal-300 text-sm font-bold mb-4 animate-pulse">رحلات ممتعة، ذكريات لا تُنسى</span>
+                <h1 class="text-3xl md:text-6xl lg:text-7xl font-black text-white mb-6 leading-snug">
+                    وجهتك القادمة تبدأ <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-500">من هنا</span>
+                </h1>
+                <p class="text-md md:text-lg text-gray-300 mb-8 max-w-2xl mx-auto">نحن نضمن لك أفضل تجربة سفر بأفضل الأسعار. استكشف مجموعة رحلاتنا الترفيهية الآن.</p>
+                <a href="#trips-section" class="inline-block bg-teal-600 hover:bg-teal-700 text-white font-bold py-4 px-10 rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all">تصفح العروض الحالية</a>
+            </div>
+        </header>
 
+        <!-- Grid -->
+        <section id="trips-section" class="py-20">
+            <div class="container mx-auto px-6">
+                <div class="flex justify-between items-end mb-12">
+                    <div>
+                        <h2 class="text-3xl font-bold text-white mb-2">جميع رحلاتنا المتاحة</h2>
+                        <div class="h-1 w-20 bg-teal-500 rounded"></div>
+                    </div>
+                </div>
+                <div id="trips-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+            </div>
+        </section>
 
+        <!-- Footer -->
+        <footer class="bg-black/80 text-gray-400 py-10 border-t border-gray-800">
+            <div class="container mx-auto px-6 text-center">
+                <p class="mb-4 text-xl font-bold text-white" id="footerCompanyName">Wolf TraVal</p>
+                <div class="flex justify-center gap-4">
+                    <a href="https://wa.me/${companyPhone}" target="_blank" class="text-3xl hover:text-green-500"><i class="fab fa-whatsapp"></i></a>
+                     <a href="${FB_PAGE}" target="_blank" class="text-3xl hover:text-blue-500"><i class="fab fa-facebook"></i></a>
+                </div>
+                <p class="text-sm mt-6">© 2025 جميع الحقوق محفوظة لـ Wolf TraVal.</p>
+            </div>
+        </footer>
 
-        // [جديد] بناء كود التفاعلات
-        let reactionsHTML = '';
-        if (msgData.reactions && Object.keys(msgData.reactions).length > 0) {
-            reactionsHTML = `<div class="reactions-container">`;
-            for (const emoji in msgData.reactions) {
-                const count = msgData.reactions[emoji].length;
-                if (count > 0) {
-                    reactionsHTML += `<div class="reaction-item" onclick="handleReaction('${msgData.id}', '${emoji}')">${emoji}<span class="reaction-count">${count}</span></div>`;
-                }
-            }
-            reactionsHTML += `</div>`;
-        }
+    </div>
 
+    <!-- Admin Modal -->
+    <div id="adminPinModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div class="bg-gray-800 border border-teal-500/50 w-full max-w-sm rounded-2xl shadow-2xl p-6">
+            <h3 class="text-xl font-bold text-center text-white mb-4">الدخول كمسؤول</h3>
+            <form onsubmit="return checkAdminPin()" class="space-y-4">
+                <input type="password" id="pinInput" maxlength="4" required class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white text-center text-2xl tracking-widest focus:outline-none focus:border-teal-500" placeholder="••••">
+                <button type="submit" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 rounded-lg">دخول</button>
+                <button type="button" onclick="toggleAdminModal()" class="w-full text-gray-500 text-sm">إلغاء</button>
+            </form>
+        </div>
+    </div>
 
-
-
-
-
-
-
-        row.innerHTML = `<img src="${sender.avatar}" alt="${sender.name}" class="chat-avatar"><div class="bubble ${isSent ? 'sent' : 'recv'}"><div class="bubble-content">${!isSent ? `<div class="bubble-sender">${badgeHTML} ${sender.name}${muteIcon}</div>` : ''}${replyQuoteHTML}<span>${msgData.text}${editedTag}</span><div class="timestamp">${time}</div></div>${reactionsHTML}</div>`;
-
-
-
-
-
-
-
-
-        const bubble = row.querySelector('.bubble');
-        bubble.style.cursor = 'pointer';
-        bubble.title = 'اضغط لإظهار الخيارات';
-        bubble.addEventListener('click', (e) => {
-            e.stopPropagation(); 
-            showMessageActionModal(msgData); 
-        });
-
-
-
-
-
-
-
-
-        return row;
-    }
-
-
-
-
-
-
-
-
-    /* --- دالة تحديث الشريط العلوي (الصورة) --- */
-    function updateHeaderUI(profile) {
-        if (!profile) return;
-        headerEl.querySelector('.avatar').src = profile.avatar;
-        headerEl.querySelector('.avatar').alt = profile.name;
-    };
-  </script>
-
-
-
-
-
-
-
-
-  <!-- === [!!] سكربت الـ Service Worker لجعله تطبيقاً [!!] === -->
-  <script>
-    // Service Worker registration
-    if ('serviceWorker' in navigator) {
-      // Define the service worker code as a string
-      const swCode = `
-        const CACHE_NAME = 'chat-shehab-cache-v1';
-        // Cache the main HTML file on install
-        self.addEventListener('install', (event) => {
-          event.waitUntil(
-            caches.open(CACHE_NAME).then((cache) => {
-              // We cache the start_url defined in the manifest ('.')
-              return cache.addAll(['.']);
-            })
-          );
-          self.skipWaiting();
-        });
-
-
-
-
-
-
-
-
-        // Activate event to clean up old caches
-        self.addEventListener('activate', (event) => {
-          event.waitUntil(
-            caches.keys().then((cacheNames) => {
-              return Promise.all(
-                cacheNames.map((cacheName) => {
-                  if (cacheName !== CACHE_NAME) {
-                    return caches.delete(cacheName);
-                  }
-                })
-              );
-            })
-          );
-          return self.clients.claim();
-        });
-
-
-
-
-
-
-
-
-        // Network-first strategy for a chat app
-        // We want the freshest data, but fall back to cache if offline
-        self.addEventListener('fetch', (event) => {
-          // We only handle GET requests
-          if (event.request.method !== 'GET') {
-            return;
-          }
-          
-          // For Firebase assets or fonts, use cache-first
-          if (event.request.url.includes('firebasestorage.googleapis.com') || 
-              event.request.url.includes('fonts.googleapis.com') ||
-              event.request.url.includes('pexels.com') ||
-              event.request.url.includes('res.cloudinary.com') || // [جديد] إضافة Cloudinary
-              event.request.url.includes('placehold.co')) {
+    <!-- Add/Edit Trip Modal (تمت استعادة التصميم الأصلي هنا) -->
+    <div id="addTripModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/80 backdrop-blur-sm p-0 md:p-4 overflow-y-auto">
+        <div class="bg-gray-800 border border-gray-700 w-full md:max-w-xl md:my-8 rounded-none md:rounded-2xl shadow-2xl overflow-hidden h-full md:h-auto animate-[fadeIn_0.3s_ease-out] flex flex-col">
             
-            event.respondWith(
-              caches.open(CACHE_NAME).then((cache) => {
-                return cache.match(event.request).then((cachedResponse) => {
-                  const fetchPromise = fetch(event.request).then((networkResponse) => {
-                    cache.put(event.request, networkResponse.clone());
-                    return networkResponse;
-                  });
-                  // Return cached response if found, otherwise fetch
-                  return cachedResponse || fetchPromise;
-                });
-              })
-            );
-            return;
-          }
+            <div class="modal-header-fixed p-4 border-b border-gray-700 flex justify-between items-center">
+                <h3 id="modalTitle" class="text-xl font-bold text-white">إضافة رحلة جديدة</h3>
+                <button onclick="closeTripModal()" class="text-gray-400 hover:text-white transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form id="addTripForm" onsubmit="handleTripSubmit(event)" class="p-4 md:p-6 space-y-4 md:space-y-6 overflow-y-auto">
+                <!-- الحقول الأساسية (التصميم الأول) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-1">عنوان الرحلة</label>
+                        <input type="text" id="tripTitle" required class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500" placeholder="مثال: رحلة دهب 4 أيام">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-1">المكان</label>
+                        <input type="text" id="tripLocation" required class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500" placeholder="مثال: جنوب سيناء">
+                    </div>
+                </div>
 
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-1">السعر (جنية)</label>
+                        <input type="number" id="tripPrice" required class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500" placeholder="3500">
+                    </div>
+                    <div class="col-span-2 lg:col-span-1">
+                        <label class="block text-sm font-medium text-gray-400 mb-1">تاريخ ووقت الرحلة</label>
+                        <input type="datetime-local" id="departureDate" required class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500 text-left ltr">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-1">الأماكن المتاحة</label>
+                        <input type="number" id="availableSeats" required class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500" placeholder="20">
+                    </div>
+                </div>
+                
+                 <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-1">كود الرحلة</label>
+                    <input type="text" readonly value="سيتم التوليد تلقائياً" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-gray-500 cursor-not-allowed">
+                </div>
 
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-1">عدد ليالي الرحلة</label>
+                        <select id="nightsSelect" onchange="toggleCustomInput('nightsSelect', 'nightsCustom')" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500">
+                            <option value="1">1 ليلة</option>
+                            <option value="2">2 ليالي</option>
+                            <option value="3" selected>3 ليالي</option>
+                            <option value="5">5 ليالي</option>
+                            <option value="10">10 ليالي</option>
+                            <option value="other">أخرى (أدخل يدوياً)</option>
+                        </select>
+                        <input type="number" id="nightsCustom" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500 mt-2 hidden" placeholder="أدخل العدد يدوياً">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-1">عدد أيام الرحلة</label>
+                        <select id="daysSelect" onchange="toggleCustomInput('daysSelect', 'daysCustom')" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500">
+                            <option value="1">1 يوم</option>
+                            <option value="2">2 أيام</option>
+                            <option value="4" selected>4 أيام</option>
+                            <option value="6">6 أيام</option>
+                            <option value="10">10 أيام</option>
+                            <option value="other">أخرى (أدخل يدوياً)</option>
+                        </select>
+                         <input type="number" id="daysCustom" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500 mt-2 hidden" placeholder="أدخل العدد يدوياً">
+                    </div>
+                </div>
 
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-1">الوصف التفصيلي</label>
+                    <textarea id="tripDesc" required rows="3" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500" placeholder="تفاصيل البرنامج والمزارات الرئيسية..."></textarea>
+                </div>
 
+                <div class="bg-gray-900 p-4 rounded-xl border border-gray-700">
+                    <h4 class="text-white font-bold mb-3"><i class="fas fa-upload ml-2"></i> رفع صورة الرحلة الرئيسية</h4>
+                    <p class="text-xs text-gray-500 mb-3">سيتم رفع الملف مباشرة إلى Cloudinary وحفظ رابطه.</p>
+                    <input type="file" id="tripImageFile" accept="image/*" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500 text-left ltr">
+                </div>
 
-
-
-
-          // Network-first for the main app
-          event.respondWith(
-            fetch(event.request).then((networkResponse) => {
-              // Cache the fresh response
-              return caches.open(CACHE_NAME).then((cache) => {
-                cache.put(event.request, networkResponse.clone());
-                return networkResponse;
-              });
-            }).catch(() => {
-              // If network fails, try to get it from the cache
-              return caches.match(event.request, {
-                ignoreSearch: true // This helps match '.' which might be '/' or 'index.html'
-              });
-            })
-          );
-        });
-      `;
-
-
-
-
-
-
-
-
-      // Create a Blob from the service worker string
-      const swBlob = new Blob([swCode], { type: 'application/javascript' });
-
-
-
-
-
-
-
-
-      // Create an Object URL from the Blob
-      const swUrl = URL.createObjectURL(swBlob);
-
-
-
-
-
-
-
-
-      // Register the service worker using the Object URL
-      navigator.serviceWorker.register(swUrl)
-        .then((registration) => {
-          console.log('Service Worker registered successfully:', registration);
-        })
-        .catch((error) => {
-          console.error('Service Worker registration failed:', error);
-        });
-    }
-  </script>
-  <!-- === نهاية سكربت الـ Service Worker === -->
-
-
-
-
-
-
-
+                <button type="submit" id="submitBtn" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 rounded-lg shadow-lg transition-colors mt-2">
+                    حفظ ونشر الرحلة
+                </button>
+            </form>
+        </div>
+    </div>
 
 </body>
 </html>
