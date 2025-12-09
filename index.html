@@ -1274,7 +1274,7 @@
 
 
 
-    /* --- دالة ضغط الصور --- */
+    /* --- [جديد] دالة ضغط الصور قبل رفعها --- */
     async function compressImage(file, maxSize = 800, quality = 0.7) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -1283,51 +1283,44 @@
                 const img = new Image();
                 img.src = event.target.result;
                 img.onload = () => {
-                    let width = img.width;
-                    let height = img.height;
-
-
-
-
-
-
-
-
+                    let { width, height } = img;
                     if (width > height) {
-                        if (width > maxSize) {
-                            height *= maxSize / width;
-                            width = maxSize;
-                        }
+                        if (width > maxSize) { height *= maxSize / width; width = maxSize; }
                     } else {
-                        if (height > maxSize) {
-                            width *= maxSize / height;
-                            height = maxSize;
-                        }
+                        if (height > maxSize) { width *= maxSize / height; height = maxSize; }
                     }
-
-
-
-
-
-
-
-
                     const canvas = document.createElement('canvas');
                     canvas.width = width;
                     canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-                    const dataUrl = canvas.toDataURL('image/jpeg', quality);
-                    resolve(dataUrl);
+                    canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                    resolve(canvas.toDataURL('image/jpeg', quality));
                 };
-                img.onerror = (error) => {
-                    reject(error);
-                };
+                img.onerror = reject;
             };
-            reader.onerror = (error) => {
-                reject(error);
-            };
+            reader.onerror = reject;
         });
+    }
+
+
+
+
+    /* --- [جديد] دالة رفع الصور إلى Cloudinary --- */
+    async function uploadToCloudinary(fileOrBlob) {
+        const formData = new FormData();
+        formData.append('file', fileOrBlob);
+        formData.append('upload_preset', 'souq_upload'); // Preset الرفع الخاص بك
+        const CLOUD_NAME = 'db9h7zm1h'; // اسم السحابة الخاص بك
+        const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
+        try {
+            const response = await fetch(url, { method: 'POST', body: formData });
+            if (!response.ok) throw new Error('فشل الرفع إلى Cloudinary');
+            const data = await response.json();
+            return data.secure_url; // إرجاع الرابط الآمن للصورة
+        } catch (error) {
+            console.error("خطأ في الرفع إلى Cloudinary:", error);
+            showToast("فشل رفع الصورة.");
+            return null;
+        }
     }
 
 
@@ -1433,76 +1426,24 @@
 
 
 
-
-
-
-
-    /* --- === [!!] إصلاح المشكلة 1: تطبيق المظهر العام على الجميع [!!] === ---
-     * تم تعديل هذه الدالة لتطبيق الإعدادات العامة أولاً، ثم الإعدادات الشخصية كأولوية
-     * --- === نهاية الإصلاح === ---
-     */
+    /* --- [تم الإصلاح] دالة دمج الإعدادات العامة والشخصية --- */
     const applyCombinedSettings = () => {
         if (!currentUserProfile) return;
-
-
-
-
-
-
-
-
-        // 1. نبدأ بالإعدادات الافتراضية
+        
+        // 1. ابدأ بالإعدادات الافتراضية
         let finalSettings = { ...defaultSettings };
-
-
-
-
-
-
-
-
-        // 2. تطبيق الإعدادات العامة (إذا كانت موجودة)
+        
+        // 2. قم بتطبيق الإعدادات العامة (التي وضعها المالك)، إن وجدت
         if (globalSettings) {
             finalSettings = { ...finalSettings, ...globalSettings };
         }
-
-
-
-
-
-
-
-
-        // 3. تطبيق الإعدادات الشخصية للمستخدم (كأولوية أخيرة لتجاوز العام)
-        // [إصلاح المشكلة 1] يجب أن يتم تطبيق الإعدادات الشخصية فقط إذا لم يتم تعيينها في الإعدادات العامة
-        const userSettings = currentUserProfile.settings || {};
-
-
-
-
-        // ندمج الإعدادات الشخصية، ولكن فقط إذا لم يتم تعيينها في الإعدادات العامة (أو إذا كانت الإعدادات العامة غير موجودة)
-        finalSettings = {
-            ...finalSettings,
-            ...userSettings,
-            // [إصلاح المشكلة 1] الخلفية الشخصية تتجاوز العامة فقط إذا لم يتم تعيين خلفية عامة
-            chatBackground: globalSettings?.chatBackground || userSettings.chatBackground || defaultSettings.chatBackground,
-            // [إصلاح المشكلة 1] الوضع الليلي الشخصي يتجاوز العام
-            darkMode: userSettings.darkMode !== undefined ? userSettings.darkMode : finalSettings.darkMode,
-            // يمكن تطبيق نفس المنطق على باقي الإعدادات إذا أردت أن يتجاوز الشخصي العام
-            sentBubbleBg: userSettings.sentBubbleBg || finalSettings.sentBubbleBg,
-            recvBubbleBg: userSettings.recvBubbleBg || finalSettings.recvBubbleBg,
-            fontSize: userSettings.fontSize || finalSettings.fontSize,
-            bubblePadding: userSettings.bubblePadding || finalSettings.bubblePadding,
-        };
-
-
-
-
-
-
-
-
-        // 4. تطبيق الإعدادات النهائية
+        
+        // 3. قم بتطبيق إعدادات المستخدم الشخصية، والتي تتجاوز كلاً من الافتراضية والعامة
+        if (currentUserProfile.settings) {
+            finalSettings = { ...finalSettings, ...currentUserProfile.settings };
+        }
+        
+        // 4. طبق الإعدادات النهائية المدمجة على الواجهة
         applyUserSettings(finalSettings);
     };
 
@@ -1805,44 +1746,23 @@
 
 
 
-            const welcome = messagesEl.querySelector('.welcome-message');
             const isScrolledUp = messagesEl.scrollHeight - messagesEl.clientHeight > messagesEl.scrollTop + 150;
 
 
 
 
-            // [إصلاح 1] حفظ ارتفاع التمرير قبل التحديث
-            const scrollHeightBefore = messagesEl.scrollHeight;
 
 
 
 
-
-
-
-
-            if (!snapshot.empty && !messagesEl.querySelector('.load-more-btn')) {
-                 const loadMoreContainer = document.createElement('div');
-                 loadMoreContainer.className = 'load-more-container';
-                 loadMoreContainer.innerHTML = `<button class="load-more-btn" disabled>جاري تحميل الرسائل...</button>`;
-                 messagesEl.prepend(loadMoreContainer);
-                 setTimeout(() => {
-                     const btn = messagesEl.querySelector('.load-more-btn');
-                     if(btn) btn.textContent = 'لا توجد رسائل أقدم';
-                 }, 2000);
-            }
-
-
-
-
-
-
-
-
-            if (snapshot.empty && welcome) {
-                welcome.innerHTML = `<h3>لا توجد رسائل بعد</h3><p>ابدأ الدردشة الآن!</p>`;
-            } else if (welcome) {
-                welcome.remove();
+            if (snapshot.empty) {
+                 const welcome = messagesEl.querySelector('.welcome-message');
+                 if (welcome) {
+                    welcome.innerHTML = `<h3>لا توجد رسائل بعد</h3><p>ابدأ الدردشة الآن!</p>`;
+                 }
+            } else {
+                 const welcome = messagesEl.querySelector('.welcome-message');
+                 if (welcome) welcome.remove();
             }
 
 
@@ -1853,8 +1773,6 @@
 
 
             let newMessagesAdded = false;
-            let messagesModified = false;
-            let messagesRemoved = false; // [إصلاح 1] لتتبع الحذف
             snapshot.docChanges().forEach((change) => {
                 const msgData = { id: change.doc.id, ...change.doc.data() };
                 const msgEl = messagesEl.querySelector(`[data-msg-id="${msgData.id}"]`);
@@ -1862,33 +1780,23 @@
 
 
 
-                if (change.type === "added" && !msgEl) {
-                    const newMsgEl = createMessageElement(msgData);
-                    if (newMsgEl) {
-                        // [الإصلاح 2] إذا كانت الرسالة المضافة هي أول رسالة في الـ Snapshot 
-                        // (وهذا يحدث عندما يتم سحب رسالة قديمة لتعويض رسالة محذوفة)
-                        if (change.newIndex === 0 && messagesEl.querySelector('.message-row')) {
-                            // نقوم بإدراجها قبل أول رسالة موجودة (الأقدم)
-                            const firstMessageRow = messagesEl.querySelector('.message-row');
-                            messagesEl.insertBefore(newMsgEl, firstMessageRow);
-                        } else {
-                            // وإلا، فهي رسالة جديدة حقيقية، نقوم بإلحاقها في الأسفل
+                if (change.type === "added") {
+                    if(!msgEl) {
+                        const newMsgEl = createMessageElement(msgData);
+                        if (newMsgEl) {
                             messagesEl.appendChild(newMsgEl); 
                             newMessagesAdded = true;
                         }
                     }
                 }
-                // [جديد] تحديث الرسالة المعدلة أو التي تم التفاعل عليها
                 if (change.type === "modified" && msgEl) {
                     const updatedMsgEl = createMessageElement(msgData);
-                    if (updatedMsgEl) {
-                        msgEl.replaceWith(updatedMsgEl);
-                        messagesModified = true; // وضع علامة التعديل
-                    }
+                    if (updatedMsgEl) msgEl.replaceWith(updatedMsgEl);
                 }
+                // [تم الإصلاح] الآن نتجاهل التعويض التلقائي للرسائل
+                // سيتم حذف الرسالة فقط، ولن يتم إضافة رسالة قديمة بدلاً عنها
                 if (change.type === "removed" && msgEl) {
                     msgEl.remove();
-                    messagesRemoved = true; // [إصلاح 1]
                 }
             });
 
@@ -1899,43 +1807,24 @@
 
 
 
-            // دالة التمرير لأسفل
             const scrollToBottom = () => {
-                setTimeout(() => {
-                    messagesEl.scrollTop = messagesEl.scrollHeight;
-                }, 0);
+                setTimeout(() => { messagesEl.scrollTop = messagesEl.scrollHeight; }, 0);
             };
 
 
 
 
-            // [إصلاح 1] تعديل منطق التمرير
-            if (messagesRemoved) {
-                // إذا تم حذف رسالة، يتم تعويضها برسالة قديمة (الـ 51).
-                // نقوم بتعديل التمرير للحفاظ على موضع الرؤية.
-                const scrollHeightAfter = messagesEl.scrollHeight;
-                const scrollDiff = scrollHeightAfter - scrollHeightBefore;
-                messagesEl.scrollTop += scrollDiff;
-            }
 
 
 
 
-
-
-
-
-            if (newMessagesAdded || messagesModified) { // التمرير التلقائي عند التعديل أيضاً
+            if (newMessagesAdded) {
                 if (isInitialMessagesLoad || !isScrolledUp) {
                     scrollToBottom();
                 }
             } else if (isInitialMessagesLoad) {
                 scrollToBottom();
             }
-
-
-
-
 
 
 
@@ -1999,7 +1888,7 @@
 
 
 
-        // مسح حالة الرد عند تغيير الصفحة
+        // [تم الإصلاح] مسح حالة الرد بشكل أكثر فعالية
         if (pageName !== 'chat') {
             clearReplyState();
         }
@@ -2151,12 +2040,13 @@
 
 
 
-    // دالة مسح حالة الرد
+    // [تم الإصلاح] دالة مسح حالة الرد
     function clearReplyState() {
-        replyingToMessage = null;
-        const container = pageCache.chat?.querySelector('#replyQuoteContainerWrapper');
-        if (container) container.style.display = 'none';
-        pageCache.chat?.querySelector('#msgInput').focus();
+        if (replyingToMessage) {
+            replyingToMessage = null;
+            const container = pageCache.chat?.querySelector('#replyQuoteContainerWrapper');
+            if (container) container.style.display = 'none';
+        }
     }
 
 
@@ -2246,7 +2136,6 @@
 
     // دالة تنفيذ التعديل على Firestore
     async function handleEditMessage(messageId, newText) {
-        // [إصلاح 2] تم إزالة showLoading(true) و showLoading(false)
         try {
             await updateDoc(doc(messagesCollection, messageId), { 
                 text: newText,
@@ -2821,7 +2710,7 @@
 
 
 
-        </div><div class="settings-section"><h2 class="settings-section-title">خلفية الدردشة</h2><div class="background-grid" id="backgroundGrid">${backgroundImages.map(img => `<div class="background-option" style="background-image: url(${img.thumb})" data-url="${img.full}"></div>`).join('')}</div><div class="settings-option" style="padding-top: 16px;"><label for="bgUpload" class="settings-btn-themed" style="flex:1; text-align:center; cursor:pointer; background: var(--accent-color);">رفع خلفية خاصة</label><input type="file" id="bgUpload" accept="image/*" style="display:none;"></div><div class="settings-option" style="padding-top: 8px;"><button class="settings-btn-themed" id="resetBgBtn" style="background: var(--danger-color); flex:1;">مسح الخلفية</button></div></div>${ownerSectionHTML}<div class="settings-section"><h2 class="settings-section-title">وسام الإدارة</h2><div class="settings-option"><input type="password" id="badgePass" class="auth-input" placeholder="أدخل كلمة المرور" style="flex:1"/><button id="badgeSaveBtn" class="settings-btn-themed">حفظ</button></div></div><div class="settings-section"><h2 class="settings-section-title">إعادة الضبط</h2><div class="settings-option"><button id="resetAllSettings" class="settings-btn-themed" style="background: var(--danger-color); flex:1;">إعادة ضبط كل إعداداتي</button></div></div>`;
+        </div><div class="settings-section"><h2 class="settings-section-title">خلفية الدردشة</h2><div class="background-grid" id="backgroundGrid">${backgroundImages.map(img => `<div class="background-option" style="background-image: url(${img.thumb})" data-url="${img.full}"></div>`).join('')}</div><div class="settings-option" style="padding-top: 16px;"><label for="bgUpload" class="settings-btn-themed" style="flex:1; text-align:center; cursor:pointer; background: var(--accent-color);">رفع خلفية خاصة</label><input type="file" id="bgUpload" accept="image/*" style="display:none;"></div><div class="settings-option" style="padding-top: 8px;"><button class="settings-btn-themed" id="resetBgBtn" style="background: var(--danger-color); flex:1;">مسح الخلفية</button></div></div>${ownerSectionHTML}<div class="settings-section"><h2 class="settings-section-title">وسام الإدارة</h2><div class="settings-option"><!-- WARNING: The passwords below are visible to any user who inspects the page code. This is a major security risk. --><input type="password" id="badgePass" class="auth-input" placeholder="أدخل كلمة المرور" style="flex:1"/><button id="badgeSaveBtn" class="settings-btn-themed">حفظ</button></div></div><div class="settings-section"><h2 class="settings-section-title">إعادة الضبط</h2><div class="settings-option"><button id="resetAllSettings" class="settings-btn-themed" style="background: var(--danger-color); flex:1;">إعادة ضبط كل إعداداتي</button></div></div>`;
 
 
 
@@ -2983,7 +2872,7 @@
 
 
 
-    // دالة ربط الأوامر بصفحة البروفايل (لرفع الصور واختيار الجنس)
+    // [تم التعديل] دالة ربط الأوامر بصفحة البروفايل (لرفع الصور واختيار الجنس)
     function attachProfileFormListeners(form, isEditing = false) {
       const avatarUploadInput = form.querySelector(isEditing ? '#editAvatarUpload' : '#avatarUpload');
       const avatarPreview = form.querySelector(isEditing ? '#editAvatarPreview' : '#avatarPreview');
@@ -2997,17 +2886,12 @@
 
 
 
-      /* --- إصلاح 2: تغيير اسم الزر --- */
       randomAvatarBtn.textContent = 'صورة رمزية تالية';
 
 
 
 
-
-
-
-
-      // عند اختيار ملف صورة
+      // [تم التعديل] عند اختيار ملف صورة للرفع
       avatarUploadInput.addEventListener('change', async (event) => {
           const file = event.target.files[0];
           if (!file) return;
@@ -3015,41 +2899,28 @@
 
 
 
-
-
-
-
           showLoading(true);
           try {
-              const compressedBase64 = await compressImage(file, 800, 0.7); // ضغط الصورة
+              // 1. ضغط الصورة لتقليل حجمها قبل الرفع
+              const compressedDataUrl = await compressImage(file, 400, 0.8);
+              // 2. تحويل الصورة المضغوطة إلى ملف Blob للرفع
+              const blob = await (await fetch(compressedDataUrl)).blob();
+              // 3. رفع الملف إلى Cloudinary
+              const imageUrl = await uploadToCloudinary(blob);
 
 
 
 
-
-
-
-
-              if (compressedBase64.length > 700 * 1024) { 
-                  showToast("الصورة كبيرة جداً حتى بعد الضغط. حاول بصورة أخرى.");
-                  avatarUploadInput.value = '';
-                  showLoading(false);
-                  return;
+              if (imageUrl) {
+                  avatarPreview.src = imageUrl;
+                  avatarHiddenInput.value = imageUrl;
+                  randomAvatarBtn.style.display = 'none';
+              } else {
+                  avatarUploadInput.value = ''; // مسح الإدخال في حالة الفشل
               }
-
-
-
-
-
-
-
-
-              avatarPreview.src = compressedBase64; // عرض الصورة المضغوطة
-              avatarHiddenInput.value = compressedBase64; // تخزينها (كنص)
-              randomAvatarBtn.style.display = 'none'; // إخفاء زر العشوائي
           } catch (error) {
-              console.error("Image compression failed:", error);
-              showToast("حدث خطأ أثناء ضغط الصورة.");
+              console.error("Image processing/upload failed:", error);
+              showToast("حدث خطأ أثناء معالجة الصورة.");
           } finally {
               showLoading(false);
           }
@@ -3062,7 +2933,6 @@
 
 
 
-      /* --- إصلاح 2: تعديل دالة `updateAvatar` لاستخدام `getNextAvatar` --- */
       const updateAvatar = () => {
           const gender = form.querySelector('.gender-option.selected').dataset.gender;
           const newAvatar = getNextAvatar(gender); 
@@ -3082,41 +2952,12 @@
           randomAvatarBtn.disabled = true;
           randomAvatarBtn.textContent = '...';
           await new Promise(resolve => setTimeout(resolve, 10)); 
-
-
-
-
-
-
-
-
           try {
               updateAvatar();
-
-
-
-
-
-
-
-
               await new Promise((resolve) => {
                   avatarPreview.onload = resolve;
-                  avatarPreview.onerror = () => {
-                      console.error("Failed to load next avatar image.");
-                      resolve(); 
-                  };
+                  avatarPreview.onerror = resolve;
               });
-
-
-
-
-
-
-
-
-          } catch (error) {
-              console.error("Error in next avatar click:", error);
           } finally {
               randomAvatarBtn.disabled = false;
               randomAvatarBtn.textContent = 'صورة رمزية تالية';
@@ -3134,25 +2975,9 @@
           option.addEventListener('click', async () => { 
               form.querySelectorAll('.gender-option').forEach(opt => opt.classList.remove('selected'));
               option.classList.add('selected');
-
-
-
-
-
-
-
-
               randomAvatarBtn.disabled = true;
               randomAvatarBtn.textContent = '...';
               await new Promise(resolve => setTimeout(resolve, 10));
-
-
-
-
-
-
-
-
               try {
                   updateAvatar(); 
                   await new Promise((resolve) => { 
@@ -3199,50 +3024,17 @@
         const data = { 
             name, 
             gender: form.querySelector('.gender-option.selected').dataset.gender, 
-            location: form.querySelector('[name="location"]').value.trim() 
+            location: form.querySelector('[name="location"]').value.trim(),
+            avatar: form.querySelector('[name="avatar"]').value // الصورة الآن هي رابط URL
         };
-        data.avatar = form.querySelector('[name="avatar"]').value; 
-
-
-
-
-
-
-
-
+        
         if (isEditing) {
             await updateDoc(userRef, data);
             showToast("تم حفظ التعديلات بنجاح!");
             openPage('profile'); 
         } else {
             data.badge = null; 
-
-
-
-
-
-
-
-
-            /* --- === [!!] إصلاح الطلب 2: المظهر للمستخدم الجديد [!!] === --- */
-            // التحقق إذا كان المالك قد وضع مظهراً عاماً
-            if (globalSettings) {
-                // المستخدم الجديد يحصل على المظهر العام كإعدادات افتراضية
-                // ندمجها مع الإعدادات الافتراضية لضمان وجود كل الخصائص
-                data.settings = { ...defaultSettings, ...globalSettings };
-            } else {
-                // لا يوجد مظهر عام، المستخدم يحصل على الإعدادات الافتراضية العادية
-                data.settings = defaultSettings; 
-            }
-            /* --- === نهاية إصلاح الطلب 2 === --- */
-
-
-
-
-
-
-
-
+            data.settings = globalSettings ? { ...defaultSettings, ...globalSettings } : defaultSettings; 
             data.createdAt = Timestamp.now();
             data.isMuted = false; 
             data.isOnline = true;
@@ -3310,53 +3102,12 @@
 
 
 
-        /* --- === [!!] هذا هو الإصلاح [!!] === ---
-         * تم إرجاع التحديث الفوري المحلي هنا
-         * --- === نهاية الإصلاح === ---
-         */
         const updateSettings = async (newSetting) => {
             if (!currentUserProfile) return; 
-
-
-
-
-
-
-
-
-            // 1. نقوم بإنشاء نسخة محدثة من الإعدادات بناءً على الحالة الحالية
             const updatedSettings = { ...defaultSettings, ...(currentUserProfile.settings || {}), ...newSetting };
-
-
-
-
-
-
-
-
             try { 
-                // 2. [الإصلاح] تحديث الحالة المحلية *فوراً*
                 currentUserProfile.settings = updatedSettings; 
-
-
-
-
-
-
-
-
-                // 3. [الإصلاح] تطبيق الإعدادات *فوراً* على الواجهة
                 applyCombinedSettings(); 
-
-
-
-
-
-
-
-
-                // 4. الآن، نحفظ في قاعدة البيانات (في الخلفية)
-                // المراقب سيجلبها لاحقاً لكن الواجهة تحدثت بالفعل
                 await updateDoc(doc(usersCollection, currentUserProfile.id), { settings: updatedSettings }); 
             } 
             catch (error) { console.error("Failed to save settings:", error); }
@@ -3374,7 +3125,6 @@
             page.querySelector('#applyToAllBtn').addEventListener('click', async () => { 
                 showLoading(true); 
                 try { 
-                    // [تم التعديل] حفظ كل الإعدادات لتطبيقها على الجميع
                     const settingsToApply = { ...defaultSettings, ...(currentUserProfile.settings || {}) };
                     await setDoc(globalSettingsDoc, settingsToApply); 
                     showToast("تم حفظ المظهر العام وتطبيقه على الجميع فوراً!"); 
@@ -3425,35 +3175,24 @@
 
 
 
-        // --- ربط أوامر الإعدادات العادية ---
-
-
-
-
-
-
-
-
-        // رفع خلفية خاصة
+        // [تم التعديل] رفع خلفية خاصة عبر Cloudinary
         const bgUploadInput = page.querySelector('#bgUpload');
         bgUploadInput.addEventListener('change', async (event) => {
             const file = event.target.files[0];
             if (!file) return;
             showLoading(true);
             try {
-                const compressedBase64 = await compressImage(file, 1200, 0.6); 
-                if (compressedBase64.length > 700 * 1024) { 
-                     showToast("الصورة كبيرة جداً حتى بعد الضغط.");
-                     bgUploadInput.value = '';
-                     showLoading(false);
-                     return;
+                const compressedDataUrl = await compressImage(file, 1200, 0.7); 
+                const blob = await (await fetch(compressedDataUrl)).blob();
+                const imageUrl = await uploadToCloudinary(blob);
+                if (imageUrl) {
+                    updateSettings({ chatBackground: imageUrl }); 
+                    page.querySelectorAll('.background-option').forEach(opt => opt.classList.remove('selected'));
+                    showToast("تم تعيين الخلفية الجديدة.");
                 }
-                updateSettings({ chatBackground: compressedBase64 }); 
-                page.querySelectorAll('.background-option').forEach(opt => opt.classList.remove('selected'));
-                showToast("تم تعيين الخلفية الجديدة.");
                 bgUploadInput.value = '';
             } catch (error) {
-                console.error("BG compression failed:", error);
+                console.error("BG upload failed:", error);
                 showToast("فشل رفع الخلفية.");
             } finally {
                 showLoading(false);
@@ -3478,26 +3217,12 @@
 
 
 
-        // شريط حجم الخط
         const fontSizeRange = page.querySelector('#fontSizeRange');
-        const fontSizeValue = page.querySelector('#fontSizeValue');
-
-
-
-
-
-
-
-
-        // 1. تحديث النص فقط أثناء السحب (input)
         fontSizeRange.addEventListener('input', (e) => { 
-            const newSize = e.target.value;
-            fontSizeValue.textContent = `${newSize}px`; 
+            page.querySelector('#fontSizeValue').textContent = `${e.target.value}px`; 
         });
-        // 2. ربط زر الحفظ
         page.querySelector('#saveFontSize').addEventListener('click', () => {
-            const newSize = parseInt(fontSizeRange.value); 
-            updateSettings({ fontSize: newSize }); 
+            updateSettings({ fontSize: parseInt(fontSizeRange.value) }); 
             showToast('تم حفظ حجم الخط.');
         });
 
@@ -3508,27 +3233,13 @@
 
 
 
-        // شريط حجم بطاقة الرسالة
         const bubblePaddingRange = page.querySelector('#bubblePaddingRange');
-        const bubblePaddingValue = page.querySelector('#bubblePaddingValue');
-
-
-
-
-
-
-
-
-        // 1. تحديث النص فقط أثناء السحب (input)
         bubblePaddingRange.addEventListener('input', (e) => { 
-            const val = e.target.value;
-            const text = val == 1 ? 'صغير' : (val == 2 ? 'وسط' : 'كبير');
-            bubblePaddingValue.textContent = text; 
+            const text = e.target.value == 1 ? 'صغير' : (e.target.value == 2 ? 'وسط' : 'كبير');
+            page.querySelector('#bubblePaddingValue').textContent = text; 
         });
-        // 2. ربط زر الحفظ
         page.querySelector('#saveBubblePadding').addEventListener('click', () => {
-            const newPadding = parseInt(bubblePaddingRange.value);
-            updateSettings({ bubblePadding: newPadding }); 
+            updateSettings({ bubblePadding: parseInt(bubblePaddingRange.value) }); 
             showToast('تم حفظ حجم البطاقة.');
         });
 
@@ -3539,7 +3250,6 @@
 
 
 
-        // ربط أزرار الخلفيات الجاهزة
         const settings = { ...defaultSettings, ...(currentUserProfile.settings) };
         page.querySelectorAll('.background-option').forEach(el => {
             if(settings.chatBackground === el.dataset.url) el.classList.add('selected');
@@ -3558,7 +3268,6 @@
 
 
 
-        // زر مسح الخلفية
         page.querySelector('#resetBgBtn').addEventListener('click', () => { 
             page.querySelectorAll('.background-option').forEach(opt => opt.classList.remove('selected')); 
             updateSettings({ chatBackground: '' }); 
@@ -3572,29 +3281,13 @@
 
 
 
-        /* --- إصلاح 2: (وسام الإدارة) --- */
         page.querySelector('#badgeSaveBtn').addEventListener('click', async () => {
             const pass = page.querySelector('#badgePass').value;
             let newBadge = null;
             let isValidPass = false;
-
-
-
-
-
-
-
-
-            if (pass === '1532') {
-                newBadge = 'owner'; 
-                isValidPass = true;
-            } else if (pass === '2026') {
-                newBadge = 'moderator'; 
-                isValidPass = true;
-            } else if (pass === '') {
-                newBadge = null; 
-                isValidPass = true;
-            }
+            if (pass === '1532') { newBadge = 'owner'; isValidPass = true; } 
+            else if (pass === '2026') { newBadge = 'moderator'; isValidPass = true; } 
+            else if (pass === '') { newBadge = null; isValidPass = true; }
 
 
 
@@ -3608,49 +3301,13 @@
                 page.querySelector('#badgePass').value = '';
                 return;
             }
-
-
-
-
-
-
-
-
             try { 
                 await updateDoc(doc(usersCollection, currentUserProfile.id), { badge: newBadge }); 
                 showToast(newBadge ? 'تم منح الوسام بنجاح!' : 'تم إزالة الوسام.');
-
-
-
-
-
-
-
-
-                // تحديث الحالة المحلية فوراً
                 currentUserProfile.badge = newBadge; 
-
-
-
-
-
-
-
-
-                // إعادة رسم صفحة الإعدادات لإظهار/إخفاء أدوات المالك
-                // سيتم مسح كلمة المرور تلقائياً عند إعادة الرسم
                 renderSettingsPage(true); 
-
-
-
-
-
-
-
-
             } catch(error){ showToast('فشل الحفظ!'); }
         });
-        /* --- نهاية الإصلاح 2 --- */
 
 
 
@@ -3659,7 +3316,6 @@
 
 
 
-        // زر إعادة ضبط الإعدادات الشخصية
         page.querySelector('#resetAllSettings').addEventListener('click', async () => {
              if(await showConfirmModal("إعادة ضبط الإعدادات", "هل أنت متأكد من إعادة ضبط كل إعداداتك الشخصية؟")){
                 try { 
@@ -3678,7 +3334,7 @@
 
 
 
-    /* --- دالة إرسال الرسالة --- */
+    /* --- [تم الإصلاح] دالة إرسال الرسالة --- */
     async function sendMessage(event) {
         event.preventDefault();
 
@@ -3700,13 +3356,12 @@
 
 
         if (text && currentUserProfile) {
-            const originalText = msgInput.value; 
-            msgInput.value = ''; // <--- [إصلاح المشكلة 1] مسح حقل الإدخال فوراً
+            msgInput.value = ''; // مسح حقل الإدخال فوراً
+            updateTypingStatus(false); // إيقاف مؤشر الكتابة فوراً
 
 
 
 
-            // بيانات الرسالة الأساسية
             const messageData = { 
                 text, 
                 senderId: currentUserProfile.id, 
@@ -3716,51 +3371,28 @@
 
 
 
-            // إضافة بيانات الرد إن وجدت
             if (replyingToMessage) {
                 messageData.replyToId = replyingToMessage.id;
                 messageData.replyToName = replyingToMessage.name;
                 messageData.replyToText = replyingToMessage.text;
-                clearReplyState(); // مسح حالة الرد بعد الإرسال
             }
-
-
-
-
-            let messageSentSuccessfully = false;
+            
+            // [تم الإصلاح] مسح حالة الرد مباشرة بعد تجهيز الرسالة
+            clearReplyState();
 
 
 
 
             try { 
-                // 1. محاولة إرسال الرسالة
                 await addDoc(messagesCollection, messageData); 
-                messageSentSuccessfully = true;
             } catch (error) { 
+                // [تم الإصلاح] تم إزالة إشعار الفشل لتجنب الإزعاج
                 console.error("Error sending message:", error);
-                // 2. في حالة فشل الإرسال، نعيد النص وحالة الرد
-                msgInput.value = originalText; 
-                showToast("فشل إرسال الرسالة.");
-                if (messageData.replyToId) {
-                    replyingToMessage = { id: messageData.replyToId, name: messageData.replyToName, text: messageData.replyToText };
-                    pageCache.chat.querySelector('#replyQuoteContainerWrapper').style.display = 'block';
-                }
-            }
-
-
-
-
-            // 3. إذا نجح الإرسال، نحاول تحديث حالة الكتابة (في كتلة try/catch منفصلة لتجنب مشكلة "فشل الإرسال")
-            if (messageSentSuccessfully) {
-                try {
-                    await updateTypingStatus(false); 
-                } catch (error) {
-                    console.warn("Failed to clear typing status after send:", error);
-                    // لا نعرض رسالة خطأ للمستخدم لأن الرسالة وصلت بالفعل
-                }
+                // لا نرجع النص القديم، نعتمد على أن المحاولة ستنجح في الخلفية
             }
             
-            msgInput.focus(); // إعادة التركيز على حقل الإدخال
+            // [تم الإصلاح] إعادة التركيز على الحقل للحفاظ على الكيبورد
+            setTimeout(() => msgInput.focus(), 0);
         }
     }
 
@@ -3834,7 +3466,6 @@
             for (const emoji in msgData.reactions) {
                 const count = msgData.reactions[emoji].length;
                 if (count > 0) {
-                    // [جديد] إضافة onclick لفتح مودال التفاعلات مرة أخرى
                     reactionsHTML += `<div class="reaction-item" onclick="handleReaction('${msgData.id}', '${emoji}')">${emoji}<span class="reaction-count">${count}</span></div>`;
                 }
             }
@@ -3858,32 +3489,12 @@
 
 
         const bubble = row.querySelector('.bubble');
-        const isOwnMessage = msgData.senderId === currentUserProfile.id;
-        const isAdmin = currentUserProfile.badge === 'owner' || currentUserProfile.badge === 'moderator';
-        const canShowFullOptions = isOwnMessage || isAdmin;
-
-
-
-
-
-
-
-
-        if (canShowFullOptions) { 
-            bubble.style.cursor = 'pointer';
-            bubble.title = 'اضغط لإظهار الخيارات';
-            bubble.addEventListener('click', (e) => {
-                e.stopPropagation(); 
-                showMessageActionModal(msgData); 
-            });
-        } else { 
-            bubble.style.cursor = 'pointer';
-            bubble.title = 'اضغط للرد أو خيارات الرسالة';
-            bubble.addEventListener('click', (e) => {
-                e.stopPropagation(); 
-                showMessageActionModal(msgData); // [معدل] إظهار نافذة الخيارات
-            });
-        }
+        bubble.style.cursor = 'pointer';
+        bubble.title = 'اضغط لإظهار الخيارات';
+        bubble.addEventListener('click', (e) => {
+            e.stopPropagation(); 
+            showMessageActionModal(msgData); 
+        });
 
 
 
@@ -3977,6 +3588,7 @@
           if (event.request.url.includes('firebasestorage.googleapis.com') || 
               event.request.url.includes('fonts.googleapis.com') ||
               event.request.url.includes('pexels.com') ||
+              event.request.url.includes('res.cloudinary.com') || // [جديد] إضافة Cloudinary
               event.request.url.includes('placehold.co')) {
             
             event.respondWith(
