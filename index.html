@@ -8,7 +8,9 @@
     <!-- PWA Setup -->
     <meta name="theme-color" content="#0f172a">
     <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icon-192.png">
+    <!-- استخدام نفس أيقونة الذئب للموقع -->
+    <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/512/wolf.png">
+    <link rel="icon" type="image/png" href="https://img.icons8.com/fluency/512/wolf.png">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -23,13 +25,12 @@
     <style>
         body { font-family: 'Cairo', sans-serif; background-color: #000; overflow-x: hidden; }
 
-        /* تعديل الهيدر ليصبح رفيعاً */
         .glass-nav { 
             background: rgba(0, 0, 0, 0.7); 
             backdrop-filter: blur(12px);    
             border-bottom: 1px solid rgba(255, 255, 255, 0.05); 
             z-index: 50; 
-            height: 60px; /* ارتفاع ثابت وصغير */
+            height: 60px; 
         }
 
         #loader {
@@ -45,7 +46,7 @@
             transform: translateX(-100%); 
             left: 0; right: auto; 
             will-change: transform;
-            top: 60px !important; /* مطابق لارتفاع الهيدر الجديد */
+            top: 60px !important;
         }
         .mobile-menu.open { transform: translateX(0); }
 
@@ -105,11 +106,9 @@
         let pendingDelete = null; 
         let currentBookingTrip = null;
         
-        // متغيرات للتحكم في اللودر
         let isTripsLoaded = false;
         let isBannerLoaded = false;
 
-        // دالة إخفاء اللودر
         function removeLoader() {
             const loader = document.getElementById('loader');
             if (loader && !loader.classList.contains('loader-hidden')) {
@@ -117,8 +116,6 @@
                 setTimeout(() => loader.remove(), 500);
             }
         }
-
-        // --- مؤقت الأمان: 6 ثواني كحد أقصى ---
         setTimeout(removeLoader, 6000);
 
         const firebaseConfig = {
@@ -159,10 +156,8 @@
             return url.match(/\.(mp4|webm|ogg|mov)$/i) || url.includes('/video/upload/');
         }
 
-        // دالة فحص اكتمال التحميل
         function checkAllLoaded() {
             if (isTripsLoaded && isBannerLoaded) {
-                // التأكد من أن الصور الظاهرة قد تم تحميلها
                 const images = document.images;
                 let loaded = true;
                 for (let i = 0; i < images.length; i++) {
@@ -171,11 +166,9 @@
                         break;
                     }
                 }
-                
                 if (loaded) {
-                    removeLoader(); // إخفاء فوري إذا كل شيء جاهز
+                    removeLoader(); 
                 } else {
-                    // إعادة المحاولة بعد وقت قصير إذا لم تنته المهلة
                     setTimeout(checkAllLoaded, 500);
                 }
             }
@@ -206,12 +199,10 @@
             document.querySelectorAll('.wa-link').forEach(l => l.href = `https://wa.me/${DEFAULT_PHONE}`);
         }
 
-        // --- Lightbox Logic ---
         window.openLightbox = function(src) {
             const lb = document.getElementById('mainLightbox');
             const container = document.getElementById('lightboxContent');
             container.innerHTML = ''; 
-
             if (isVideo(src)) {
                 container.innerHTML = `<video src="${src}" controls autoplay class="max-w-full max-h-[80vh] rounded-lg"></video>`;
             } else {
@@ -455,7 +446,6 @@
             document.getElementById('tripDesc').value = trip.description;
         }
 
-        // --- Utils ---
         window.toggleLoginModal = function() { document.getElementById('loginModal').classList.toggle('hidden'); document.getElementById('loginModal').classList.toggle('flex'); document.getElementById('mobile-menu').classList.remove('open'); }
         window.handleLogin = async function(e) { e.preventDefault(); try { await signInWithEmailAndPassword(auth, document.getElementById('emailInput').value, document.getElementById('passInput').value); window.toggleLoginModal(); } catch (error) { showNotification("بيانات خطأ", "error"); } }
         window.handleLogout = async function() { await signOut(auth); window.location.reload(); }
@@ -466,7 +456,7 @@
                 snap.forEach(doc => tripsData.push({id: doc.id, ...doc.data()})); 
                 renderTrips(tripsData); 
                 isTripsLoaded = true;
-                checkAllLoaded(); // محاولة إخفاء اللودر
+                checkAllLoaded(); 
             }); 
         }
         function listenForBanner() { 
@@ -475,7 +465,7 @@
                 snap.forEach(doc => bannerData.push({id: doc.id, ...doc.data()})); 
                 renderBanner(bannerData); 
                 isBannerLoaded = true;
-                checkAllLoaded(); // محاولة إخفاء اللودر
+                checkAllLoaded(); 
             }); 
         }
         
@@ -518,6 +508,33 @@
             <p class="text-gray-300 mt-2 text-sm animate-pulse">جاري تجهيز رحلتك...</p>
         </div>
     </div>
+
+    <!-- زر التثبيت اليدوي (يظهر فقط إذا كان التطبيق جاهزاً) -->
+    <button id="installBtn" class="hidden fixed bottom-6 left-6 z-[9999] bg-gradient-to-r from-teal-600 to-blue-600 text-white px-5 py-3 rounded-2xl shadow-2xl font-bold animate-bounce flex items-center gap-3 border border-white/20 hover:scale-105 transition-transform">
+        <i class="fas fa-download text-xl"></i> تثبيت التطبيق
+    </button>
+    <!-- كود تفعيل زر التثبيت -->
+    <script>
+        let deferredPrompt;
+        const installBtn = document.getElementById('installBtn');
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBtn.classList.remove('hidden');
+        });
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                deferredPrompt = null;
+                installBtn.classList.add('hidden');
+            }
+        });
+        window.addEventListener('appinstalled', () => {
+            installBtn.classList.add('hidden');
+            deferredPrompt = null;
+        });
+    </script>
 
     <!-- Lightbox with Close Button -->
     <div id="mainLightbox" class="lightbox">
