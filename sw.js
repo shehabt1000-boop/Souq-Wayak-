@@ -1,93 +1,89 @@
-const CACHE_NAME = 'wolf-traval-v1';
+const CACHE_NAME = 'wolf-traval-v2'; // قمت بتغيير الإصدار لتحديث الكاش عند المستخدمين
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
+  './manifest.json',
   'https://cdn.tailwindcss.com',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
   'https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap'
 ];
 
-// Install Event
+// 1. تثبيت التطبيق وتخزين الملفات الأساسية
 self.addEventListener('install', (event) => {
+  self.skipWaiting(); // تفعيل التحديث فوراً
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('Caching assets');
+      console.log('Wolf TraVal: Caching assets');
       return cache.addAll(ASSETS_TO_CACHE);
     })
   );
 });
 
-// Activate Event
+// 2. تفعيل وحذف الكاش القديم
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cache) => {
           if (cache !== CACHE_NAME) {
-            console.log('Clearing old cache');
+            console.log('Wolf TraVal: Clearing old cache');
             return caches.delete(cache);
           }
         })
       );
     })
   );
+  return self.clients.claim();
 });
 
-// Fetch Event - Cache First Strategy
+// 3. استراتيجية جلب البيانات (Network First for HTML, Cache First for Assets)
 self.addEventListener('fetch', (event) => {
+  const requestUrl = new URL(event.request.url);
+
+  // استثناء طلبات Firebase والبيانات الديناميكية من الكاش لتجنب الأخطاء
+  if (requestUrl.href.includes('firebase') || requestUrl.href.includes('firestore') || requestUrl.href.includes('googleapis')) {
+    return; // دع المتصفح والـ SDK يتعاملون مع الشبكة مباشرة
+  }
+
+  // للصفحة الرئيسية (HTML): حاول جلب الأحدث من الشبكة، إذا فشل استخدم الكاش
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        return caches.match('./index.html');
+      })
+    );
+    return;
+  }
+
+  // للملفات الثابتة (صور، خطوط، CSS): استخدم الكاش أولاً
   event.respondWith(
     caches.match(event.request).then((response) => {
-      // Return cached version or fetch new
       return response || fetch(event.request);
     })
   );
 });
 
-
-// =========================================================
-// إضافة دعم الإشعارات الخارجية (Push Notifications)
-// =========================================================
-
-self.addEventListener('push', (event) => {
-  let data;
-  try {
-    data = event.data.json();
-  } catch (e) {
-    data = { title: 'Wolf TraVal | تنبيه', body: 'يوجد تحديث جديد في الرحلات!', url: '/' };
-  }
-  
-  const title = data.title || 'Wolf TraVal';
-  const options = {
-    body: data.body || 'لا تفوت أحدث العروض!',
-    icon: 'https://img.icons8.com/fluency/512/airplane-take-off.png', // استخدم أيقونة مناسبة
-    badge: 'https://img.icons8.com/fluency/512/Wolf.png', // أيقونة صغيرة
-    tag: 'trip-update-notification',
-    data: {
-        url: data.url || '/' 
-    }
-  };
-
-  event.waitUntil(
-    self.registration.showNotification(title, options)
-  );
-});
-
-// حدث النقر على الإشعار
+// 4. أهم جزء: ماذا يحدث عند الضغط على الإشعار؟
 self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
+  console.log('Notification clicked', event);
   
-  const targetUrl = event.notification.data.url;
+  event.notification.close(); // إغلاق الإشعار من شريط التنبيهات
+
+  // جلب الرابط المرفق مع الإشعار (data.url) الذي وضعناه في ملف HTML
+  const urlToOpen = event.notification.data ? event.notification.data.url : '/';
 
   event.waitUntil(
-    clients.matchAll({ type: 'window' }).then((clientList) => {
-      for (const client of clientList) {
-        if (client.url === targetUrl && 'focus' in client) {
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+      // إذا كان التطبيق مفتوحاً بالفعل، قم بالتركيز عليه
+      for (let i = 0; i < windowClients.length; i++) {
+        const client = windowClients[i];
+        if (client.url.includes(urlToOpen) && 'focus' in client) {
           return client.focus();
         }
       }
-      // إذا لم يكن هناك نافذة مفتوحة تطابق، افتح نافذة جديدة
+      // إذا لم يكن مفتوحاً، افتح نافذة جديدة
       if (clients.openWindow) {
-        return clients.openWindow(targetUrl);
+        return clients.openWindow(urlToOpen);
       }
     })
   );
