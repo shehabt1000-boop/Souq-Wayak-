@@ -7,7 +7,7 @@ const ASSETS_TO_CACHE = [
   'https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap'
 ];
 
-// Install Event (Caching static assets)
+// Install Event
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -17,7 +17,7 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Activate Event (Cleaning old caches)
+// Activate Event
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -33,7 +33,7 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch Event (Cache First strategy)
+// Fetch Event - Cache First Strategy
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((response) => {
@@ -43,34 +43,27 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// =======================================================
-// PUSH NOTIFICATION HANDLERS (الإشعارات الخارجية)
-// =======================================================
 
-// Push Event Handler: Receives push data from the server
+// =========================================================
+// إضافة دعم الإشعارات الخارجية (Push Notifications)
+// =========================================================
+
 self.addEventListener('push', (event) => {
-  console.log('[Service Worker] Push Received.');
-
-  // يفضل أن يتم إرسال البيانات كـ JSON من الخادم
-  let data = { title: 'Wolf TraVal', body: 'يوجد تحديث جديد في الرحلات!', url: './' }; 
-
-  if (event.data) {
-    try {
-      // محاولة تحليل حمولة الإشعار كـ JSON
-      data = event.data.json();
-    } catch (e) {
-      console.error('Push data not JSON, using default.', e);
-    }
+  let data;
+  try {
+    data = event.data.json();
+  } catch (e) {
+    data = { title: 'Wolf TraVal | تنبيه', body: 'يوجد تحديث جديد في الرحلات!', url: '/' };
   }
-
-  const title = data.title || 'Wolf TraVal | رحلة قادمة';
+  
+  const title = data.title || 'Wolf TraVal';
   const options = {
-    body: data.body || 'اكتشف عروض السفر الجديدة الآن!',
-    icon: 'https://img.icons8.com/fluency/512/airplane-take-off.png', 
-    badge: 'https://img.icons8.com/fluency/512/Wolf.png', // أيقونة صغيرة تظهر على شريط النظام
-    vibrate: [100, 50, 100],
+    body: data.body || 'لا تفوت أحدث العروض!',
+    icon: 'https://img.icons8.com/fluency/512/airplane-take-off.png', // استخدم أيقونة مناسبة
+    badge: 'https://img.icons8.com/fluency/512/Wolf.png', // أيقونة صغيرة
+    tag: 'trip-update-notification',
     data: {
-      url: data.url || './' // الرابط الذي سيتم فتحه عند النقر
+        url: data.url || '/' 
     }
   };
 
@@ -79,23 +72,20 @@ self.addEventListener('push', (event) => {
   );
 });
 
-// Notification Click Handler: Handles user interaction
+// حدث النقر على الإشعار
 self.addEventListener('notificationclick', (event) => {
-  console.log('[Service Worker] Notification click received.');
-
   event.notification.close();
+  
+  const targetUrl = event.notification.data.url;
 
-  let targetUrl = event.notification.data.url || './';
-
-  // يضمن فتح نافذة جديدة أو التركيز على النافذة الموجودة
   event.waitUntil(
     clients.matchAll({ type: 'window' }).then((clientList) => {
-      for (let i = 0; i < clientList.length; i++) {
-        const client = clientList[i];
-        if (client.url.includes(targetUrl) && 'focus' in client) {
+      for (const client of clientList) {
+        if (client.url === targetUrl && 'focus' in client) {
           return client.focus();
         }
       }
+      // إذا لم يكن هناك نافذة مفتوحة تطابق، افتح نافذة جديدة
       if (clients.openWindow) {
         return clients.openWindow(targetUrl);
       }
