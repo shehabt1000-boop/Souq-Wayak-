@@ -71,12 +71,28 @@
 
         .slide-media { transition: opacity 0.5s ease-in-out; }
         
-        /* FIX #5: Description Auto Expand (No button) */
+        /* FIX #4: Description and Card Layout */
+        .trip-card {
+            display: flex;
+            flex-direction: column;
+            height: 100%; /* Force card to take full height of grid cell */
+        }
+        
+        .trip-card-body {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1; /* Make the body fill the remaining space */
+        }
+
         .description-content {
-            height: auto;
-            min-height: 3rem;
-            overflow: visible;
-            white-space: pre-wrap; /* يحافظ على تنسيق الأسطر */
+            flex-grow: 1; /* This makes the description take up any extra empty space */
+            white-space: pre-wrap;
+            margin-bottom: 1rem;
+        }
+        
+        /* Ensure the bottom section (details + button) stays at the bottom */
+        .card-bottom-section {
+            margin-top: auto; 
         }
     </style>
 
@@ -85,7 +101,7 @@
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('Service Worker registered', reg))
+                    .then(reg => console.log('Service Worker registered'))
                     .catch(err => console.log('Service Worker failed', err));
             });
         }
@@ -96,7 +112,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
         import { getFirestore, collection, addDoc, query, orderBy, Timestamp, onSnapshot, setDoc, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
         import { getAuth, signInAnonymously, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
-        // Added Messaging imports for future readiness with VAPID
         import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-messaging.js";
 
         const COMPANY_NAME = "Wolf TraVal";
@@ -107,7 +122,6 @@
         const UPLOAD_PRESET = "souq_upload"; 
         const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`;
         
-        // FIX #4: VAPID Key Integration
         const VAPID_KEY = "BPJf9kVHsSnlFP-FtwMkiaNlLRhgTVdLYkDKlopLjLbHfboN9u9kE7Jkzx4KpeGCNyimnQ79fVTz65qP8ydAmAM";
 
         let isAdmin = false; 
@@ -120,10 +134,7 @@
 
         let isTripsLoaded = false;
         let isBannerLoaded = false;
-        
-        // Flag to prevent "New Trip" notification on initial page load
         let initialLoadComplete = false; 
-        
         let unreadNotificationsCount = 0;
 
         function removeLoader() {
@@ -133,7 +144,7 @@
                 setTimeout(() => loader.remove(), 500);
             }
         }
-        setTimeout(removeLoader, 8000); // 8 seconds fallback
+        setTimeout(removeLoader, 8000); 
 
         const firebaseConfig = {
           apiKey: "AIzaSyCTo8DhvaAmNtV9OIgY5eLOeVgF7iQqlYk",
@@ -148,13 +159,18 @@
         const tripsPath = `artifacts/${firebaseConfig.projectId}/public/data/trips`; 
         const bannerPath = `artifacts/${firebaseConfig.projectId}/public/data/banner`; 
 
-        // FIX #1: Notification Logic (Stacking in Container)
+        // FIX #1: Prevent Double Notifications
         window.showNotification = function(msg, type) {
             const container = document.getElementById('toast-container');
             if (!container) return;
 
+            // Check duplicates
+            const existingToasts = container.querySelectorAll('div');
+            for(let toast of existingToasts) {
+                if(toast.innerText.includes(msg)) return; // Don't show if already visible
+            }
+
             const notif = document.createElement('div');
-            // Design for stacked notifications
             notif.className = `transform transition-all duration-500 ease-in-out translate-x-full opacity-0 flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl backdrop-blur-md border border-white/10 min-w-[300px] ${type === 'error' ? 'bg-red-900/90 text-red-100' : type === 'success' ? 'bg-green-900/90 text-green-100' : 'bg-gray-800/90 text-gray-100'}`;
             
             let icon = type === 'error' ? '<i class="fas fa-exclamation-circle text-xl"></i>' : type === 'success' ? '<i class="fas fa-check-circle text-xl"></i>' : '<i class="fas fa-info-circle text-teal-400 text-xl"></i>';
@@ -165,13 +181,10 @@
             `;
             
             container.appendChild(notif);
-
-            // Animate In
             requestAnimationFrame(() => {
                 notif.classList.remove('translate-x-full', 'opacity-0');
             });
 
-            // Remove after 6 seconds
             setTimeout(() => {
                 notif.classList.add('opacity-0', 'translate-x-full');
                 setTimeout(() => notif.remove(), 500);
@@ -196,7 +209,7 @@
 
         function checkAllLoaded() {
             if (isTripsLoaded && isBannerLoaded) {
-               // Loading handled by deep link or timeout
+               // Loading logic
             }
         }
         
@@ -217,13 +230,11 @@
             updateNotificationBadge();
         }
         
-        // FIX #2 & #3: Notification Center Logic
         window.openNotificationCenter = function() { 
              const modal = document.getElementById('notificationModal');
              const listContainer = document.getElementById('notificationList');
              listContainer.innerHTML = '';
              
-             // Get the saved trip title
              const latestTripTitle = localStorage.getItem('latestNotifTitle');
 
              if (unreadNotificationsCount === 0) {
@@ -231,7 +242,7 @@
              } else {
                  let contentMsg = "وصلت رحلة جديدة! تصفح الرحلات الآن.";
                  if (latestTripTitle) {
-                     contentMsg = `رحلة جديدة إلى: <span class="text-teal-400 font-bold">${latestTripTitle}</span>`;
+                     contentMsg = `رحلة جديدة: <span class="text-teal-400 font-bold">${latestTripTitle}</span>`;
                  }
                  
                  listContainer.innerHTML = `
@@ -247,6 +258,7 @@
              modal.classList.remove('hidden');
              modal.classList.add('flex');
              
+             // Reset count on open
              if (unreadNotificationsCount > 0) {
                  unreadNotificationsCount = 0;
                  localStorage.setItem('unreadNotifs', 0);
@@ -258,25 +270,20 @@
             document.getElementById('notificationModal').classList.remove('flex');
         }
 
-        // Setup Notifications permission
         window.requestNotificationPermission = async function() {
             if (!("Notification" in window)) return;
-            
             try {
                 const permission = await Notification.requestPermission();
                 if (permission === "granted") {
-                    // Try to get token with VAPID key
                     try {
                         const token = await getToken(messaging, { vapidKey: VAPID_KEY });
                         if(token) console.log("FCM Token:", token);
-                    } catch(e) { console.log("FCM Token Error (Expected on non-https/localhost):", e); }
+                    } catch(e) {}
                 }
             } catch (error) { console.error(error); }
         }
 
-        // FIX #4: External Notification Helper
         function sendExternalNotification(title, body) {
-            // Checks if Service Worker is ready to show notification
             if (Notification.permission === "granted" && 'serviceWorker' in navigator) {
                 navigator.serviceWorker.ready.then(registration => {
                     registration.showNotification(title, {
@@ -311,7 +318,6 @@
                         if (tripElement) {
                             removeLoader(); 
                             tripElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            // Highlight effect
                             tripElement.classList.add('ring-2', 'ring-teal-500');
                             setTimeout(() => tripElement.classList.remove('ring-2', 'ring-teal-500'), 2000);
                         } else {
@@ -335,8 +341,7 @@
             const app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
-            // Initialize Messaging
-            try { messaging = getMessaging(app); } catch(e) { console.log("Messaging not supported in this browser"); }
+            try { messaging = getMessaging(app); } catch(e) {}
 
             onAuthStateChanged(auth, (user) => {
                 if (user && user.uid === ADMIN_UID) {
@@ -403,10 +408,6 @@
             const container = document.getElementById('trips-container');
             container.innerHTML = ''; 
             
-            // FIX: Removed the "Closest Trip" notification loop here to avoid conflict with "New Trip"
-            // The initial "Upcoming Trip" notification is best handled once separately if needed,
-            // but per request to remove overlapping, we will focus on the main list.
-
             if (trips.length === 0) {
                 container.innerHTML = `
                     <div class="col-span-full flex flex-col items-center justify-center py-16 text-center opacity-80">
@@ -423,7 +424,8 @@
             trips.forEach((trip) => {
                 const card = document.createElement('div');
                 card.id = `trip-card-${trip.id}`; 
-                card.className = "w-11/12 md:w-full max-w-sm mx-auto bg-gray-900 border border-gray-700 rounded-2xl overflow-hidden shadow-lg shadow-teal-500/10 transition-all duration-300 transform hover:-translate-y-1";
+                // FIX #4: CSS Class updates for layout
+                card.className = "trip-card w-11/12 md:w-full max-w-sm mx-auto bg-gray-900 border border-gray-700 rounded-2xl overflow-hidden shadow-lg shadow-teal-500/10 transition-all duration-300 transform hover:-translate-y-1";
 
                 let mediaList = Array.isArray(trip.images) ? trip.images : (trip.mainImageUrl ? [trip.mainImageUrl] : ['https://via.placeholder.com/400x300']);
                 let mediaHtml = '';
@@ -467,10 +469,6 @@
                     const departureDateObj = new Date(trip.departureDate);
                     const now = new Date();
                     const diffMs = departureDateObj - now;
-                    
-                    // FIX #2: Better Day Calculation (Math.ceil)
-                    // Convert to days, rounding up. If 0.1 days left (2.4 hours), it shows "1 day".
-                    // Only if negative it's expired.
                     const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 
                     if (diffMs > 0) {
@@ -478,7 +476,6 @@
                     } else { 
                         remainingTime = 'انتهت'; isExpired = true; 
                     }
-                    
                     departureDateTime = departureDateObj.toLocaleDateString('ar-EG', { day: 'numeric', month: 'short', year: 'numeric' }) + 
                                         ' - ' + departureDateObj.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
                 }
@@ -493,8 +490,9 @@
                     </div>
                 ` : '';
 
+                // FIX #4: Internal Layout Structure
                 card.innerHTML = `
-                    <div class="trip-card-image-container relative h-64 overflow-hidden bg-gray-800">
+                    <div class="trip-card-image-container relative h-64 flex-shrink-0 overflow-hidden bg-gray-800">
                         ${mediaHtml}
                         ${controlsHtml}
                         <div class="absolute top-4 right-4 bg-teal-600/90 text-white text-[10px] font-bold px-2 py-1 rounded shadow-md z-20 flex items-center gap-1">
@@ -504,26 +502,28 @@
                         ${statusTag}
                         <button onclick="shareTrip('${trip.title}', '?tripId=${trip.id}')" class="absolute bottom-4 right-4 bg-white text-gray-900 w-8 h-8 rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-transform z-20"><i class="fas fa-share-alt"></i></button>
                     </div>
-                    <div class="p-5 bg-gray-800/50 rounded-b-2xl"> 
+                    
+                    <div class="trip-card-body p-5 bg-gray-800/50 rounded-b-2xl"> 
                         ${adminControls}
                         <div class="flex justify-between items-start mb-2">
                             <h3 class="text-lg font-bold text-white leading-tight">${trip.title}</h3>
                             <span class="text-teal-400 font-extrabold text-lg whitespace-nowrap">${trip.price} <span class="text-xs font-normal text-gray-300">ج.م</span></span>
                         </div>
                         
-                        <!-- FIX #5: Description Auto Expand (No button) -->
-                        <div class="description-content text-gray-300 text-xs mb-3 font-medium">
+                        <div class="description-content text-gray-300 text-xs font-medium">
                             ${trip.description}
                         </div>
                         
-                        <div class="text-gray-300 text-[11px] border-t border-gray-700 pt-3 mt-auto space-y-2">
-                             <div class="flex justify-between">
-                                <span><i class="fas fa-calendar-alt ml-1 text-teal-500"></i> ${departureDateTime}</span>
-                                <span class="${isExpired ? 'text-red-500 font-bold' : 'text-yellow-500'}"><i class="fas fa-hourglass-half ml-1"></i> ${remainingTime}</span>
-                             </div>
-                             <div class="flex justify-between"><span><i class="fas fa-map-marker-alt ml-1 text-blue-500"></i> ${trip.location}</span><span><i class="fas fa-users ml-1 text-blue-500"></i> الاماكن المتاحه: ${trip.availableSeats || '0'}</span></div>
+                        <div class="card-bottom-section">
+                            <div class="text-gray-300 text-[11px] border-t border-gray-700 pt-3 space-y-2">
+                                <div class="flex justify-between">
+                                    <span><i class="fas fa-calendar-alt ml-1 text-teal-500"></i> ${departureDateTime}</span>
+                                    <span class="${isExpired ? 'text-red-500 font-bold' : 'text-yellow-500'}"><i class="fas fa-hourglass-half ml-1"></i> ${remainingTime}</span>
+                                </div>
+                                <div class="flex justify-between"><span><i class="fas fa-map-marker-alt ml-1 text-blue-500"></i> ${trip.location}</span><span><i class="fas fa-users ml-1 text-blue-500"></i> الاماكن المتاحه: ${trip.availableSeats || '0'}</span></div>
+                            </div>
+                            <button onclick="openBookingOptions('${trip.title}', '${trip.code}', '${trip.price}', '${tripPhone}')" class="w-full bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 text-white font-bold py-2.5 px-4 rounded-xl shadow-lg mt-4 text-sm flex justify-center items-center gap-2 transition-transform active:scale-95"><i class="fas fa-ticket-alt text-lg"></i> احجز الآن</button>
                         </div>
-                        <button onclick="openBookingOptions('${trip.title}', '${trip.code}', '${trip.price}', '${tripPhone}')" class="w-full bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 text-white font-bold py-2.5 px-4 rounded-xl shadow-lg mt-4 text-sm flex justify-center items-center gap-2 transition-transform active:scale-95"><i class="fas fa-ticket-alt text-lg"></i> احجز الآن</button>
                     </div>
                 `;
                 container.appendChild(card);
@@ -656,32 +656,55 @@
         window.handleLogin = async function(e) { e.preventDefault(); try { await signInWithEmailAndPassword(auth, document.getElementById('emailInput').value, document.getElementById('passInput').value); window.toggleLoginModal(); } catch (error) { showNotification("بيانات خطأ", "error"); } }
         window.handleLogout = async function() { await signOut(auth); window.location.reload(); }
 
+        // Function to Trigger Notification
+        function notifyNewTrip(title) {
+            if (!isAdmin) {
+                unreadNotificationsCount++;
+                localStorage.setItem('unreadNotifs', unreadNotificationsCount);
+                localStorage.setItem('latestNotifTitle', title);
+                updateNotificationBadge();
+                
+                showNotification(`رحلة جديدة: ${title}`, "info");
+                playNotificationSound();
+                sendExternalNotification(`رحلة جديدة إلى: ${title}`, `تفقد التفاصيل الآن في قسم الرحلات`);
+            }
+        }
+
         function listenForTrips() { 
             onSnapshot(query(collection(db, tripsPath), orderBy("createdAt", "desc")), (snap) => { 
                 
-                // FIX #3: Logic to prevent "New Trip" on first load AND fix last card issue
-                if (initialLoadComplete) {
+                // FIX #2 & #3: Check on Initial Load AND Live Updates
+                if (!initialLoadComplete) {
+                     // 1. Initial Load: Check if we missed a trip while closed
+                     if (!snap.empty) {
+                         const latestTrip = snap.docs[0].data();
+                         const latestTripId = snap.docs[0].id;
+                         const storedTripId = localStorage.getItem('lastSeenTripId');
+                         
+                         // If user hasn't seen this trip yet
+                         if (storedTripId !== latestTripId) {
+                             // Only notify if it's reasonably new (e.g., created in last 48 hours)
+                             const nowSeconds = Timestamp.now().seconds;
+                             const createdSeconds = latestTrip.createdAt ? latestTrip.createdAt.seconds : 0;
+                             
+                             if ((nowSeconds - createdSeconds) < 172800) { // 48 hours
+                                 setTimeout(() => notifyNewTrip(latestTrip.title), 2000); // Small delay to let UI load
+                             }
+                             localStorage.setItem('lastSeenTripId', latestTripId);
+                         }
+                     }
+                } else {
+                    // 2. Live Update: App is open and new trip comes in
                      snap.docChanges().forEach(change => {
-                        // Only notify if it's a NEW addition (not modified/removed) and the User isn't the Admin (optional logic)
                         if (change.type === "added") {
                             const newTrip = change.doc.data();
-                            // Double check it's recent (less than 1 minute) to avoid ghost notifications
                             const nowSeconds = Timestamp.now().seconds;
                             const createdSeconds = newTrip.createdAt ? newTrip.createdAt.seconds : 0;
                             
-                            if (Math.abs(nowSeconds - createdSeconds) < 300) { // 5 mins buffer
-                                if (!isAdmin) { 
-                                    const tripId = change.doc.id;
-                                    unreadNotificationsCount++;
-                                    localStorage.setItem('unreadNotifs', unreadNotificationsCount);
-                                    localStorage.setItem('latestNotifTitle', newTrip.title); // Save title for Notification Center
-                                    
-                                    updateNotificationBadge();
-                                    
-                                    showNotification(`رحلة جديدة: ${newTrip.title}`, "info");
-                                    playNotificationSound();
-                                    sendExternalNotification(`رحلة جديدة إلى: ${newTrip.title}`, `تفقد التفاصيل الآن في قسم الرحلات`);
-                                }
+                            // Only notify for fresh adds (prevents spam on re-renders)
+                            if (Math.abs(nowSeconds - createdSeconds) < 300) { 
+                                notifyNewTrip(newTrip.title);
+                                localStorage.setItem('lastSeenTripId', change.doc.id);
                             }
                         }
                     });
@@ -691,7 +714,7 @@
                 snap.forEach(doc => tripsData.push({id: doc.id, ...doc.data()})); 
                 renderTrips(tripsData); 
                 isTripsLoaded = true;
-                initialLoadComplete = true; // Mark initial load as done
+                initialLoadComplete = true; 
                 checkAllLoaded(); 
             }); 
         }
@@ -834,6 +857,7 @@
                 <div class="flex justify-between items-end mb-12">
                     <div><h2 class="text-2xl md:text-3xl font-bold text-white mb-2">الرحلات المتاحة</h2><div class="h-1 w-20 bg-teal-500 rounded"></div></div>
                 </div>
+                <!-- CSS Grid with auto-fill for better tablet responsiveness -->
                 <div id="trips-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"></div>
             </div>
         </section>
@@ -857,14 +881,14 @@
     <div id="bookingOptionsModal" class="fixed inset-0 z-[200] hidden items-center justify-center bg-black/90 backdrop-blur-sm p-4"><div class="bg-gray-800 border border-gray-700 w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center"><h3 class="text-xl font-bold text-white mb-6">كيف يمكننا مساعدتك؟</h3><div class="flex flex-col gap-3"><button onclick="handleInquiry()" class="w-full bg-transparent border border-teal-500 text-teal-400 hover:bg-teal-500/10 font-bold py-3 rounded-xl flex items-center justify-center gap-2"><i class="fab fa-whatsapp text-xl"></i> أحتاج إلى استفسار</button><button onclick="openBookingForm()" class="w-full bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 text-white font-bold py-3 rounded-xl shadow-lg flex items-center justify-center gap-2"><i class="fas fa-check-circle text-xl"></i> أريد الحجز</button></div><button onclick="closeBookingOptions()" class="mt-4 text-gray-500 text-sm hover:text-gray-300">إغلاق</button></div></div>
     <div id="bookingFormModal" class="fixed inset-0 z-[200] hidden items-center justify-center bg-black/90 backdrop-blur-sm p-4"><div class="bg-gray-800 border border-gray-700 w-full max-w-md rounded-2xl shadow-2xl p-6"><div class="flex justify-between items-center mb-6 border-b border-gray-700 pb-4"><h3 class="text-xl font-bold text-white">بيانات الحجز</h3><button onclick="closeBookingForm()" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button></div><form onsubmit="finalizeBooking(event)" class="space-y-4"><div><label class="block text-gray-400 text-xs mb-1">اسم العميل</label><input type="text" id="clientName" required class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2.5 text-white"></div><div><label class="block text-gray-400 text-xs mb-1">رقم الهاتف</label><input type="tel" id="clientPhone" required class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2.5 text-white text-right" placeholder="01xxxxxxxxx"></div><div><label class="block text-gray-400 text-xs mb-1">الرحلة المطلوبة</label><input type="text" id="formTripTitle" readonly class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-gray-400"></div><div class="grid grid-cols-2 gap-4"><div><label class="block text-gray-400 text-xs mb-1">سعر الفرد</label><input type="text" id="formTripPrice" readonly class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-gray-400 text-center"></div><div><label class="block text-gray-400 text-xs mb-1">عدد الأفراد</label><input type="number" id="formCount" min="1" value="1" oninput="updateTotalPrice()" required class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2.5 text-white text-center"></div></div><div class="bg-teal-900/30 border border-teal-500/30 p-4 rounded-xl flex justify-between items-center mt-2"><span class="text-teal-400 font-bold">إجمالي السعر:</span><span id="formTotal" class="text-white font-black text-xl">0 ج.م</span></div><button type="submit" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 rounded-xl shadow-lg mt-4">تأكيد وإرسال للواتساب <i class="fab fa-whatsapp mr-1"></i></button></form></div></div>
 
-    <!-- Notification Modal (FIX #2 & #3) -->
+    <!-- Notification Modal -->
     <div id="notificationModal" class="fixed inset-0 z-[200] hidden items-center justify-center bg-black/80 backdrop-blur-sm p-4">
         <div class="bg-gray-800 border border-teal-500/30 w-full max-w-sm rounded-2xl shadow-2xl p-6">
             <div class="flex justify-between items-center mb-4 border-b border-gray-700 pb-2">
                 <h3 class="text-xl font-bold text-white"><i class="fas fa-bell ml-2 text-teal-500"></i> الإشعارات</h3>
                 <button onclick="closeNotificationCenter()" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
             </div>
-            <div id="notificationList" class="max-h-80 overflow-y-auto space-y-3 custom-scroll">
+            <div id="notificationList" class="max-h-80 overflow-y-auto custom-scroll">
                 <!-- Content injected by JavaScript -->
             </div>
             <button onclick="closeNotificationCenter()" class="w-full mt-4 text-gray-500 text-sm hover:text-gray-300">إغلاق</button>
