@@ -1,4 +1,46 @@
-const CACHE_NAME = 'wolf-traval-v5'; // تحديث الإصدار لضمان تحميل الأيقونات الجديدة
+// 1. استيراد مكتبات Firebase (ضروري لكي يعمل والنت مفصول أو التطبيق مغلق)
+importScripts('https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-compat.js');
+
+// 2. إعدادات مشروعك الحقيقية (تم دمج البيانات التي أرسلتها)
+const firebaseConfig = {
+  apiKey: "AIzaSyCTo8DhvaAmNtV9OIgY5eLOeVgF7iQqlYk",
+  authDomain: "faculty-of-commerce-2025.firebaseapp.com",
+  databaseURL: "https://faculty-of-commerce-2025-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "faculty-of-commerce-2025",
+  storageBucket: "faculty-of-commerce-2025.firebasestorage.app",
+  messagingSenderId: "312259778835",
+  appId: "1:312259778835:web:504299bb2de918596b62e6",
+  measurementId: "G-QJZB7E2D5R"
+};
+
+// 3. تهيئة Firebase والمراسلة
+firebase.initializeApp(firebaseConfig);
+const messaging = firebase.messaging();
+
+// 4. دالة التعامل مع الإشعارات في الخلفية (Background Handler)
+// هذه الدالة هي المسؤولة عن إظهار الإشعار حتى لو التطبيق مغلق تماماً (Dead State)
+messaging.onBackgroundMessage((payload) => {
+  console.log('[firebase-messaging-sw.js] Received background message ', payload);
+  
+  // استخراج البيانات من الإشعار
+  const notificationTitle = payload.notification.title || 'Wolf TraVal';
+  const notificationOptions = {
+    body: payload.notification.body,
+    icon: 'https://raw.githubusercontent.com/shehabt1000-boop/-/8feac62d11c707c07fd2d22afba278c69070d152/Wolf%20TraVal%20.jpg', // أيقونة التطبيق
+    badge: 'https://raw.githubusercontent.com/shehabt1000-boop/-/8feac62d11c707c07fd2d22afba278c69070d152/Wolf%20TraVal%20.jpg',
+    // حفظ الرابط لفتحه عند الضغط
+    data: { url: payload.data?.url || './index.html' } 
+  };
+
+  return self.registration.showNotification(notificationTitle, notificationOptions);
+});
+
+// ====================================================
+// إعدادات الكاش والـ PWA (App Capabilities)
+// ====================================================
+
+const CACHE_NAME = 'wolf-traval-v7'; // تم التحديث لضمان وصول التعديلات للمستخدمين
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -6,11 +48,10 @@ const ASSETS_TO_CACHE = [
   'https://cdn.tailwindcss.com',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
   'https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap',
-  // تأكد من أن هذا الرابط هو نفسه المستخدم في المانيفست
   'https://raw.githubusercontent.com/shehabt1000-boop/-/8feac62d11c707c07fd2d22afba278c69070d152/Wolf%20TraVal%20.jpg'
 ];
 
-// 1. التثبيت
+// تثبيت الـ Service Worker
 self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
@@ -20,7 +61,7 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// 2. التفعيل وتنظيف القديم
+// تفعيل وتنظيف الكاش القديم
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -36,21 +77,22 @@ self.addEventListener('activate', (event) => {
   return self.clients.claim();
 });
 
-// 3. جلب البيانات (Fetch)
+// استراتيجية جلب البيانات (Network First for HTML, Cache First for Assets)
 self.addEventListener('fetch', (event) => {
   const requestUrl = new URL(event.request.url);
 
-  if (requestUrl.href.includes('firebase') || requestUrl.href.includes('firestore') || requestUrl.href.includes('googleapis')) {
+  // تجاهل طلبات Google/Firebase لأن المكتبة تتكفل بها
+  if (requestUrl.href.includes('firebase') || requestUrl.href.includes('googleapis') || requestUrl.href.includes('firestore')) {
     return;
   }
 
-  // Share Target
+  // ميزة Share Target (لو حد شارك حاجة لتطبيقك)
   if (event.request.method === 'POST' && requestUrl.pathname.includes('share-target')) {
     event.respondWith(Response.redirect('./index.html?action=shared'));
     return;
   }
 
-  // الصفحة الرئيسية
+  // للصفحات (HTML): حاول الاتصال بالإنترنت أولاً للحصول على أحدث نسخة
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request).catch(() => {
@@ -60,7 +102,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // الكاش أولاً للملفات
+  // للملفات (صور، CSS، JS): الكاش أولاً للسرعة
   event.respondWith(
     caches.match(event.request).then((response) => {
       return response || fetch(event.request);
@@ -68,31 +110,23 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// 4. Push Notification
-self.addEventListener('push', (event) => {
-  const data = event.data ? event.data.json() : {};
-  const title = data.title || 'Wolf TraVal';
-  const options = {
-    body: data.body || 'لديك عرض جديد!',
-    icon: 'https://raw.githubusercontent.com/shehabt1000-boop/-/8feac62d11c707c07fd2d22afba278c69070d152/Wolf%20TraVal%20.jpg',
-    badge: 'https://raw.githubusercontent.com/shehabt1000-boop/-/8feac62d11c707c07fd2d22afba278c69070d152/Wolf%20TraVal%20.jpg',
-    data: { url: data.url || '/' }
-  };
-  event.waitUntil(self.registration.showNotification(title, options));
-});
-
-// 5. Notification Click
+// التعامل مع الضغط على الإشعار (مهم جداً لفتح التطبيق من الخلفية)
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const urlToOpen = event.notification.data ? event.notification.data.url : '/';
+  
+  // جلب الرابط المراد فتحه من بيانات الإشعار
+  const urlToOpen = (event.notification.data && event.notification.data.url) ? event.notification.data.url : './index.html';
+
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+      // 1. إذا كان التطبيق مفتوحاً بالفعل، قم بالتركيز عليه
       for (let i = 0; i < windowClients.length; i++) {
         const client = windowClients[i];
         if (client.url.includes(urlToOpen) && 'focus' in client) {
           return client.focus();
         }
       }
+      // 2. إذا كان التطبيق مغلقاً، افتح نافذة جديدة
       if (clients.openWindow) {
         return clients.openWindow(urlToOpen);
       }
@@ -100,16 +134,16 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
-// 6. Sync
+// المزامنة الخلفية (Background Sync) - مطلوب للـ PWA القوي
 self.addEventListener('sync', (event) => {
   if (event.tag === 'sync-offers') {
-    console.log('Background Syncing Offers...');
+    console.log('Syncing data in background...');
   }
 });
 
-// 7. Periodic Sync
+// المزامنة الدورية (Periodic Sync)
 self.addEventListener('periodicsync', (event) => {
-  if (event.tag === 'daily-offers-check') {
-    console.log('Periodic Sync Check...');
+  if (event.tag === 'daily-check') {
+    console.log('Performing periodic check...');
   }
 });
