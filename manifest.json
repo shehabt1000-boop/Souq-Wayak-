@@ -1,4 +1,3 @@
-{
   "name": "Wolf TraVal",
   "short_name": "Wolf TraVal",
   "description": "اكتشف أفضل المغامرات وعروض السياحة والترفيه والرحلات البحرية في مصر.",
@@ -11,26 +10,21 @@
   "gcm_sender_id": "103953800507",
   "icons": [
     {
-      // تم تغيير رمز التثبيت (Commit Hash) إلى 'main' لجلب أحدث ملف
-      "src": "https://raw.githubusercontent.com/shehabt1000-boop/Wolf-TraVal/main/Wolf.png",
-      // تصحيح نوع الصورة من jpeg إلى png
-      "type": "image/png",
+      "src": "https://raw.githubusercontent.com/shehabt1000-boop/Wolf-TraVal/6073c5902f1c027d11188f41f9196e7329a5bfac/Wolf.png",
+      "type": "image/jpeg",
       "sizes": "192x192",
       "purpose": "any maskable"
     },
     {
-      // تم تغيير رمز التثبيت (Commit Hash) إلى 'main' لجلب أحدث ملف
-      "src": "https://raw.githubusercontent.com/shehabt1000-boop/Wolf-TraVal/main/Wolf2.png",
-      // تصحيح نوع الصورة من jpeg إلى png
-      "type": "image/png",
+      "src": "https://raw.githubusercontent.com/shehabt1000-boop/Wolf-TraVal/6073c5902f1c027d11188f41f9196e7329a5bfac/Wolf2.png",
+      "type": "image/jpeg",
       "sizes": "512x512",
       "purpose": "any maskable"
     }
   ],
   "screenshots": [
     {
-      // تم افتراض أن هذا الملف أيضًا موجود على فرع 'main' وفي نفس المستودع
-      "src": "https://raw.githubusercontent.com/shehabt1000-boop/Wolf-TraVal/main/Wolf%20TraVal%20.jpg",
+      "src": "https://raw.githubusercontent.com/shehabt1000-boop/-/8feac62d11c707c07fd2d22afba278c69070d152/Wolf%20TraVal%20.jpg",
       "sizes": "1080x1920",
       "type": "image/jpeg",
       "form_factor": "wide"
