@@ -1,1 +1,228 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=overlays-content">
 
+    <!-- PWA Settings -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" id="theme-color-meta" content="#064e3b">
+    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/shehabt1000-boop/real-estate-/3c57da6b5eb64d257a15e1a2ff26510ac9c5549f/real-estate.jpg">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <link rel="preconnect" href="https://res.cloudinary.com">
+    <link rel="preconnect" href="https://images.pexels.com">
+
+    <link rel="preload" as="image" href="https://images.pexels.com/photos/439227/pexels-photo-439227.jpeg?auto=compress&cs=tinysrgb&w=300&q=50">
+    <link rel="preload" as="image" href="https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=300&q=50">
+    <link rel="preload" as="image" href="https://images.pexels.com/photos/1268871/pexels-photo-1268871.jpeg?auto=compress&cs=tinysrgb&w=300&q=50">
+    <link rel="preload" as="image" href="https://images.pexels.com/photos/1957478/pexels-photo-1957478.jpeg?auto=compress&cs=tinysrgb&w=300&q=50">
+    <link rel="preload" as="image" href="https://images.pexels.com/photos/3914755/pexels-photo-3914755.jpeg?auto=compress&cs=tinysrgb&w=300&q=50">
+    <link rel="preload" as="image" href="https://images.pexels.com/photos/440731/pexels-photo-440731.jpeg?auto=compress&cs=tinysrgb&w=300&q=50">
+    <link rel="preload" as="image" href="https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg?auto=compress&cs=tinysrgb&w=300&q=50">
+    <link rel="preload" as="image" href="https://images.pexels.com/photos/221047/pexels-photo-221047.jpeg?auto=compress&cs=tinysrgb&w=300&q=50">
+
+    <title>السوق وياك | عقارات مصر</title>
+
+
+<!-- إعدادات الـ SEO الأساسية لجوجل -->
+    <meta name="description" content="السوق وياك - منصتك الأولى للعقارات في مصر (شقق، فلل، أراضي، محلات) للبيع والإيجار بأفضل الأسعار. ابحث عن عقارك الآن بسهولة في الشرقية وكافة المحافظات.">
+    <meta name="keywords" content="عقارات مصر, شقق للبيع, فلل للإيجار, أراضي زراعية, عقارات الزقازيق, السوق وياك, شقق مفروشة, عقارات الشرقية">
+    <link rel="canonical" href="https://real-estate-2026.netlify.app/">
+
+    <!-- إعدادات المشاركة على السوشيال ميديا (فيسبوك، واتساب، الخ) -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="السوق وياك | عقارات مصر">
+    <meta property="og:description" content="منصتك الأولى للبحث عن العقارات للبيع والإيجار في مصر. تصفح آلاف العقارات الآن بسهولة.">
+    <meta property="og:image" content="https://raw.githubusercontent.com/shehabt1000-boop/real-estate-/3c57da6b5eb64d257a15e1a2ff26510ac9c5549f/real-estate.jpg">
+    <meta property="og:url" content="https://real-estate-2026.netlify.app/">
+
+    <!-- إعدادات تويتر -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="السوق وياك | عقارات مصر">
+    <meta name="twitter:description" content="منصتك الأولى للبحث عن العقارات للبيع والإيجار في مصر.">
+    <meta name="twitter:image" content="https://raw.githubusercontent.com/shehabt1000-boop/real-estate-/3c57da6b5eb64d257a15e1a2ff26510ac9c5549f/real-estate.jpg">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { 
+                extend: { 
+                    colors: { navy: '#0f172a', darkbg: '#1e293b', brand: '#10b981' },
+                    fontFamily: { sans:['Cairo', 'sans-serif'] },
+                    screens: { 'xs': '400px' },
+                    zIndex: { '60': '60', '70': '70', '100': '100' }
+                } 
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- ربط ملف الـ CSS الخارجي -->
+    <link rel="stylesheet" href="style.css">
+
+</head>
+<body class="text-slate-800 dark:text-slate-100 select-none">
+
+    <div id="splash-screen">
+        <div class="splash-icon-container mb-3">
+            <div class="splash-ring"></div>
+            <svg class="splash-logo" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline><circle cx="12" cy="7" r="2" fill="#10b981" stroke="none"></circle></svg>
+        </div>
+        <div class="text-white font-bold text-lg tracking-wide">السوق <span class="text-emerald-500">وياك</span></div>
+    </div>
+
+    <div id="app-content-wrapper">
+        <div id="toast-container" class="fixed top-4 left-0 right-0 z-[10000] flex flex-col items-center gap-2 pointer-events-none px-4"></div>
+
+        <header class="fixed top-0 w-full sticky-header flex items-center justify-between px-4 h-14">
+            <div class="flex flex-col justify-center" id="header-welcome-section">
+                <span class="text-[9px] font-bold text-emerald-200 dark:text-slate-400 leading-none">مرحبا بكم في</span>
+                <span class="text-[13px] font-black text-white leading-tight">السوق <span class="text-yellow-400">وياك</span></span>
+            </div>
+            <div class="flex gap-2 items-center">
+                <button id="btn-header-login" onclick="toggleModal('auth-modal')" class="p-1.5 rounded-full bg-white/20 text-white hover:bg-white/30 transition-all duration-100"><i data-lucide="user" class="w-4 h-4"></i></button>
+                <button id="btn-logout" onclick="logoutUser()" class="hidden p-1.5 rounded-full bg-red-500/80 text-white hover:bg-red-500 transition-all duration-100"><i data-lucide="log-out" class="w-4 h-4"></i></button>
+                <button onclick="toggleDarkMode()" class="p-1.5 rounded-full bg-white/20 text-white hover:bg-white/30 transition-all duration-100"><i data-lucide="moon" class="w-3.5 h-3.5 block dark:hidden"></i><i data-lucide="sun" class="w-3.5 h-3.5 hidden dark:block text-yellow-300"></i></button>
+                <button onclick="toggleAdminPanel()" id="btn-admin-top" class="hidden p-1.5 rounded-full bg-yellow-500/90 text-slate-900 hover:bg-yellow-400 transition-all duration-100"><i data-lucide="shield" class="w-3.5 h-3.5"></i></button>
+            </div>
+        </header>
+
+        <main class="pt-[4rem] pb-24 container mx-auto px-3 max-w-5xl min-h-screen">
+
+            <div id="home-view" class="block w-full"> 
+
+                <div class="mb-6 mt-1">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="categories-grid"></div>
+                </div>
+
+                <!-- Featured Slider Section -->
+                <div id="featured-section" class="mb-8 hidden">
+                    <div class="flex justify-center mb-3">
+                        <div class="bg-white dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 border border-slate-200 dark:border-slate-700 shadow-sm px-8 py-1.5 rounded-full text-[11px] font-black tracking-widest select-none">
+                            العروض المميزة
+                        </div>
+                    </div>
+                    <div class="relative w-full rounded-xl overflow-hidden shadow-lg border border-slate-200 dark:border-slate-700">
+                        <div id="featured-slider" class="flex overflow-x-auto snap-x snap-mandatory no-scrollbar w-full bg-slate-100 dark:bg-slate-800">
+                            <!-- Items Populated via JS -->
+                        </div>
+                        <button onclick="window.scrollFeatured(-1)" class="absolute right-0 top-1/2 -translate-y-1/2 bg-black/40 text-white p-2.5 rounded-l-xl z-10 hover:bg-black/60 transition-all duration-100"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
+                        <button onclick="window.scrollFeatured(1)" class="absolute left-0 top-1/2 -translate-y-1/2 bg-black/40 text-white p-2.5 rounded-r-xl z-10 hover:bg-black/60 transition-all duration-100"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
+                    </div>
+                </div>
+
+                <!-- Reviews Section -->
+                <div id="reviews-section" class="mb-8">
+                    <div class="flex justify-center mb-3">
+                        <div class="bg-white dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 border border-slate-200 dark:border-slate-700 shadow-sm px-8 py-1.5 rounded-full text-[11px] font-black tracking-widest select-none">
+                            تقييمات العملاء
+                        </div>
+                    </div>
+                    <div class="bg-slate-100 dark:bg-slate-800 rounded-2xl p-3 shadow-sm border border-slate-200 dark:border-slate-700">
+                        <div class="flex justify-between items-center mb-3 border-b border-slate-200 dark:border-slate-700 pb-2">
+                            <button onclick="openReviewModal()" class="bg-emerald-600 text-white border border-emerald-500 px-4 py-1.5 rounded-xl text-[11px] font-bold shadow-sm hover:bg-emerald-700 transition-all duration-100 flex items-center gap-1"><i data-lucide="pen-line" class="w-3.5 h-3.5"></i> إضافة تقييم</button>
+                            <div class="flex gap-1.5">
+                                <button onclick="changeReviewPage(1)" class="bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 p-1.5 rounded-lg border border-slate-200 dark:border-slate-600 hover:bg-slate-200 transition-all duration-100"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+                                <button onclick="changeReviewPage(-1)" class="bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 p-1.5 rounded-lg border border-slate-200 dark:border-slate-600 hover:bg-slate-200 transition-all duration-100"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+                            </div>
+                        </div>
+                        <div id="reviews-container" class="space-y-2.5 min-h-[120px]">
+                            <div class="flex justify-center items-center h-20 text-slate-400 text-xs">جاري تحميل التقييمات...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 mb-4 pt-6 px-4 pb-6 bg-[#065f46] dark:bg-slate-800 rounded-2xl shadow-lg text-center text-white border border-emerald-500/30 dark:border-slate-700">
+                    <h3 class="text-sm font-black mb-4">السوق وياك للعقارات</h3>
+                    <div class="space-y-2.5 text-[11px] font-bold text-emerald-100 dark:text-slate-300">
+                        <p class="flex items-center justify-center gap-1.5"><i data-lucide="headphones" class="w-3.5 h-3.5 text-yellow-400 dark:text-emerald-400"></i> رقم الدعم الفني: <a href="tel:01206244875" class="hover:underline text-white" dir="ltr">01206244875</a></p>
+                        <p class="flex items-center justify-center gap-1.5"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-yellow-400 dark:text-emerald-400"></i> العنوان: شوبك بسطه، مركز الزقازيق، الشرقية</p>
+                        <p class="flex items-center justify-center gap-1.5"><i data-lucide="calendar" class="w-3.5 h-3.5 text-yellow-400 dark:text-emerald-400"></i> تاريخ التأسيس: 2026</p>
+                    </div>
+                    <div class="flex justify-center gap-3 mt-5">
+                        <a href="#" target="_blank" class="bg-white/10 dark:bg-slate-700 p-2.5 rounded-full hover:bg-white/20 transition-all shadow-sm"><i data-lucide="facebook" class="w-4 h-4"></i></a>
+                        <a href="#" target="_blank" class="bg-white/10 dark:bg-slate-700 p-2.5 rounded-full hover:bg-white/20 transition-all shadow-sm"><i data-lucide="instagram" class="w-4 h-4"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <div id="listings-view" class="hidden w-full flex-col min-h-screen mt-2">
+                <div class="flex items-center gap-2 mb-3 bg-white dark:bg-slate-800 p-2 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
+                    <button onclick="window.history.back()" class="bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-white p-1.5 rounded-full border border-slate-200 dark:border-slate-700 hover:bg-slate-200 transition-all duration-100"><i data-lucide="arrow-right" class="w-4 h-4"></i></button>
+                    <h2 id="listings-view-title" class="text-xs font-black text-emerald-600 dark:text-emerald-400"></h2>
+                </div>
+
+                <div class="sticky-search-bar !top-[4rem] !mb-4">
+                    <div class="relative w-full">
+                        <button onclick="toggleFilterPanel()" class="absolute left-1 top-0 h-full w-9 flex items-center justify-center text-slate-500 hover:text-slate-800 dark:hover:text-white transition-all z-10"><i data-lucide="sliders-horizontal" class="w-4 h-4"></i></button>
+                        <input type="text" id="search-input" placeholder="ابحث داخل القسم (كود، عنوان)..." class="w-full bg-transparent border-none rounded-lg pl-10 pr-9 py-1 text-xs outline-none dark:text-white font-bold h-9">
+                        <button onclick="performSearch(false)" class="absolute right-1 top-0 h-full w-9 flex items-center justify-center text-slate-500 hover:text-emerald-600 transition-all"><i data-lucide="search" class="w-4 h-4"></i></button>
+                    </div>
+                    <div id="filter-panel" class="mt-2 border-t border-slate-200 dark:border-slate-700 pt-2">
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center pb-1">
+                                <h3 class="text-[10px] font-bold text-slate-700 dark:text-white flex items-center gap-1"><i data-lucide="filter" class="w-3 h-3"></i> تصفية متقدمة</h3>
+                                <button onclick="resetFilters()" class="text-[9px] text-red-500 font-bold underline cursor-pointer">إعادة تعيين</button>
+                            </div>
+                            <div id="cat-filter-wrapper" class="custom-select-wrapper hidden"><select id="filter-cat" class="custom-select py-1 text-[10px]"><option value="">كل الأقسام</option><option value="apartment">شقق</option><option value="villa">فلل</option><option value="chalet">شاليهات</option><option value="office">مكاتب</option><option value="shop">محلات</option><option value="land">أراضي</option><option value="building">عماير</option><option value="warehouse">مخازن</option></select><i data-lucide="chevron-down" class="custom-select-icon w-3 h-3"></i></div>
+                            <div class="custom-select-wrapper"><select id="filter-type" class="custom-select py-1 text-[10px]"><option value="">كل الأنواع (بيع/إيجار)</option><option value="sale">بيع</option><option value="rent">إيجار</option></select><i data-lucide="chevron-down" class="custom-select-icon w-3 h-3"></i></div>
+                            <div class="grid grid-cols-2 gap-1.5"><div class="custom-select-wrapper"><select id="filter-gov" onchange="populateCities('filter-gov', 'filter-city')" class="custom-select py-1 text-[10px]"><option value="">كل المحافظات</option></select><i data-lucide="chevron-down" class="custom-select-icon w-3 h-3"></i></div><div class="custom-select-wrapper"><select id="filter-city" class="custom-select py-1 text-[10px]"><option value="">كل المراكز</option></select><i data-lucide="chevron-down" class="custom-select-icon w-3 h-3"></i></div></div>
+                            <div class="grid grid-cols-2 gap-1.5"><input type="number" id="filter-min-price" placeholder="أقل سعر" class="input-box text-[10px] py-1"><input type="number" id="filter-max-price" placeholder="أعلى سعر" class="input-box text-[10px] py-1"></div>
+                            <div class="flex gap-2"><button onclick="performSearch(false); toggleFilterPanel()" class="flex-1 bg-emerald-600 text-white py-1.5 rounded font-bold text-[10px] shadow hover:bg-emerald-700 transition-all">تطبيق النتائج</button><button onclick="toggleFilterPanel()" class="w-16 bg-red-50 text-white py-1.5 rounded font-bold text-[10px] shadow hover:bg-red-600 transition-all flex items-center justify-center"><i data-lucide="x" class="w-4 h-4"></i></button></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="grid-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-2"></div>
+                <div id="load-more-container" class="hidden mt-6 text-center"><button onclick="loadMore()" class="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 px-8 py-2.5 rounded-full text-xs font-bold shadow-sm hover:bg-slate-50 transition-all">عرض المزيد</button></div>
+                <div id="empty-state" class="hidden text-center py-16 opacity-60 flex flex-col items-center"><div class="bg-slate-300 dark:bg-slate-800 p-4 rounded-full inline-block mb-3 border dark:border-slate-700"><i data-lucide="search-x" class="w-8 h-8 text-slate-500"></i></div><p class="text-slate-600 dark:text-slate-400 font-bold text-xs">لا توجد نتائج في هذا القسم</p><button onclick="resetFilters()" class="mt-2 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold underline">إعادة تعيين البحث</button></div>
+            </div>
+        </main>
+
+        <nav id="bottom-nav" class="fixed bottom-4 left-1/2 -translate-x-1/2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-6 py-2.5 rounded-full flex items-center gap-8 shadow-xl transition-transform hover:scale-105 z-50">
+            <button onclick="openHome(false)" class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all group"><i data-lucide="home" class="w-5 h-5 group-hover:-translate-y-1 transition-transform"></i><span class="text-[8px] font-bold mt-0.5">الرئيسية</span></button>
+            <button onclick="openAddModal()" class="w-12 h-12 bg-[#064e3b] text-white border-[3px] border-white dark:border-slate-700 rounded-full flex items-center justify-center shadow-lg transform -translate-y-5 hover:scale-110 transition-all duration-300 active:scale-90"><i data-lucide="plus" class="w-6 h-6"></i></button>
+            <button onclick="toggleChat()" class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all group relative"><div id="chat-badge" class="hidden absolute top-0 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-slate-800"></div><i data-lucide="message-circle" class="w-5 h-5 group-hover:-translate-y-1 transition-transform"></i><span class="text-[8px] font-bold mt-0.5">الدعم</span></button>
+        </nav>
+
+        <div id="logout-modal" class="hidden modal-overlay" style="z-index: 150;"><div class="relative w-full max-w-xs bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-6 text-center animate-pop border border-slate-200 dark:border-slate-700"><div class="w-16 h-16 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-red-100 dark:border-red-800/50"><i data-lucide="log-out" class="w-8 h-8"></i></div><h3 class="text-lg font-black text-slate-800 dark:text-white mb-2">تسجيل الخروج</h3><p class="text-xs text-slate-500 dark:text-slate-400 mb-6">هل أنت متأكد أنك تريد تسجيل الخروج من حسابك الحالي؟</p><div class="flex gap-2"><button onclick="confirmLogout()" class="flex-1 bg-red-500 text-white py-2.5 rounded-xl font-bold text-sm shadow hover:bg-red-600 transition-all active:scale-95">نعم، خروج</button><button onclick="toggleModal('logout-modal')" class="flex-1 bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-white py-2.5 rounded-xl font-bold text-sm shadow-sm transition-all active:scale-95 border dark:border-slate-700">إلغاء</button></div></div></div>
+
+        <div id="delete-modal" class="hidden modal-overlay" style="z-index: 150;">
+            <div class="relative w-full max-w-xs bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-6 text-center animate-pop border border-slate-200 dark:border-slate-700">
+                <div class="w-16 h-16 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-red-100 dark:border-red-800/50">
+                    <i data-lucide="trash-2" class="w-8 h-8"></i>
+                </div>
+                <h3 class="text-lg font-black text-slate-800 dark:text-white mb-2">حذف الإعلان</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mb-6">هل أنت متأكد أنك تريد حذف هذا الإعلان نهائياً؟</p>
+                <div class="flex gap-2">
+                    <button onclick="confirmDelete()" id="btn-confirm-delete" class="flex-1 bg-red-500 text-white py-2.5 rounded-xl font-bold text-sm shadow hover:bg-red-600 transition-all active:scale-95">نعم، حذف</button>
+                    <button onclick="toggleModal('delete-modal')" class="flex-1 bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-white py-2.5 rounded-xl font-bold text-sm shadow-sm transition-all active:scale-95 border dark:border-slate-700">إلغاء</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="auth-modal" class="hidden modal-overlay"><div class="relative w-full max-w-sm bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 p-6 overflow-hidden animate-pop z-50"><button onclick="toggleModal('auth-modal')" class="absolute top-3 left-3 text-slate-400 hover:text-red-500 transition-all z-10"><i data-lucide="x" class="w-5 h-5"></i></button><div class="flex justify-center mb-5"><div class="w-14 h-14 bg-slate-50 dark:bg-slate-900 rounded-full flex items-center justify-center border-2 border-emerald-500 shadow-lg"><i data-lucide="building-2" class="w-7 h-7 text-emerald-600 dark:text-emerald-400"></i></div></div><div class="flex justify-center mb-5"><div class="bg-slate-100 dark:bg-slate-900 p-1 rounded-xl flex w-full border dark:border-slate-700"><button onclick="switchAuthMode('login')" id="tab-login" class="flex-1 py-1.5 rounded-lg text-xs font-bold transition-all bg-white dark:bg-slate-800 shadow text-emerald-600 dark:text-white border dark:border-slate-600">دخول</button><button onclick="switchAuthMode('register')" id="tab-register" class="flex-1 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-500 dark:text-slate-400">إنشاء حساب</button></div></div><div id="form-login" class="space-y-3"><div class="space-y-1"><label class="text-[9px] font-bold text-slate-500">رقم الهاتف</label><div class="relative"><span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs bg-slate-200 dark:bg-slate-900 px-1.5 rounded">+20</span><input id="login-phone" type="tel" class="input-box pl-12 text-left" placeholder="1xxxxxxxxx" oninput="formatPhone(this)"></div></div><div class="space-y-1"><label class="text-[9px] font-bold text-slate-500">كلمة المرور</label><input id="login-pass" type="password" class="input-box" placeholder="••••••••"></div><button id="btn-login" onclick="loginUser()" class="w-full bg-emerald-600 text-white py-2.5 rounded-xl font-bold text-xs shadow-md hover:bg-emerald-700 transition-all transform active:scale-95 mt-2">تسجيل الدخول</button></div><div id="form-register" class="hidden space-y-3"><div class="flex justify-center"><label class="relative w-16 h-16 rounded-full border-2 border-dashed border-emerald-500 flex items-center justify-center cursor-pointer overflow-hidden bg-slate-50 dark:bg-slate-900 group transition-all"><input type="file" accept="image/*" class="hidden" onchange="previewProfileImage(this)"><img id="reg-img-preview" class="absolute inset-0 w-full h-full object-cover hidden"><div id="reg-img-placeholder" class="flex flex-col items-center text-emerald-500"><i data-lucide="camera" class="w-5 h-5 mb-0.5"></i><span class="text-[7px] font-bold">صورة</span></div></label></div><div class="space-y-1"><input id="reg-name" type="text" class="input-box text-center" placeholder="الاسم بالكامل"></div><div class="relative"><span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs bg-slate-200 dark:bg-slate-900 px-1.5 rounded">+20</span><input id="reg-phone" type="tel" class="input-box pl-12 text-left" placeholder="رقم الهاتف" oninput="formatPhone(this)"></div><input id="reg-pass" type="password" class="input-box" placeholder="كلمة المرور (6 أحرف أو أكثر)"><button onclick="registerUser()" id="btn-register" class="w-full bg-slate-800 dark:bg-emerald-600 text-white py-2.5 rounded-xl font-bold text-xs shadow-md hover:opacity-90 transition-all transform active:scale-95 mt-2">إنشاء حساب جديد</button></div></div></div>
+
+        <div id="publisher-modal" class="hidden modal-overlay" style="z-index: 105;"><div class="relative w-full max-w-sm bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 p-6 overflow-hidden animate-pop text-center z-50"><button onclick="toggleModal('publisher-modal')" class="absolute top-3 left-3 text-slate-400 hover:text-red-500 transition-all z-10"><i data-lucide="x" class="w-5 h-5"></i></button><div class="w-24 h-24 rounded-full border-4 border-emerald-500 p-1 mx-auto mb-4"><img id="pub-img" src="" class="w-full h-full rounded-full object-cover bg-slate-200 dark:bg-slate-900"></div><h2 id="pub-name" class="text-xl font-black text-slate-800 dark:text-white mb-1"></h2><p id="pub-phone" class="text-sm font-bold text-slate-500 dark:text-slate-400 mb-2" dir="ltr"></p><div id="pub-badge-status" class="hidden"></div></div></div>
+
+        <div id="review-modal" class="hidden modal-overlay"><div class="relative w-full max-w-sm bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 p-5 overflow-hidden animate-pop z-50"><h3 class="font-bold text-slate-800 dark:text-white text-sm mb-3 border-b border-slate-200 dark:border-slate-700 pb-2">إضافة تقييم جديد</h3><textarea id="review-text" rows="4" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-xs outline-none text-slate-800 dark:text-white resize-none mb-4" placeholder="اكتب تقييمك هنا بصدق..."></textarea><div class="flex gap-2"><button id="btn-submit-review" onclick="submitReview()" class="flex-1 bg-emerald-600 text-white py-2.5 rounded-xl font-bold text-xs shadow-md hover:bg-emerald-700 transition-all transform active:scale-95">نشر التقييم</button><button onclick="toggleModal('review-modal')" class="flex-1 bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-white py-2.5 rounded-xl font-bold text-xs shadow-sm transition-all border dark:border-slate-700 hover:bg-slate-200">إلغاء</button></div></div></div>
+
+        <div id="details-modal" class="hidden modal-overlay"><div class="mobile-full-modal animate-pop"><div class="relative h-52 bg-slate-200 dark:bg-slate-900 shrink-0 border-b border-slate-200 dark:border-slate-700"><button onclick="closeDetails(false)" class="absolute top-2 left-2 bg-red-500 text-white p-2 rounded-full z-20 shadow-lg hover:bg-red-600 transition-all"><i data-lucide="x" class="w-5 h-5"></i></button><div class="absolute top-2 right-2 flex gap-2 z-20"><button onclick="downloadImages()" class="bg-black/60 text-white p-2 rounded-full shadow-lg hover:bg-black/80 transition-all"><i data-lucide="download" class="w-4 h-4"></i></button><button onclick="shareListing()" class="bg-black/60 text-white p-2 rounded-full shadow-lg hover:bg-black/80 transition-all"><i data-lucide="share-2" class="w-4 h-4"></i></button></div><div id="details-slider" class="flex w-full h-full overflow-x-auto no-scrollbar snap-x scroll-smooth"></div><div id="details-arrows"><button onclick="scrollDetails(-1)" class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full z-10 hover:bg-black/70 transition-all"><i data-lucide="chevron-right" class="w-5 h-5"></i></button><button onclick="scrollDetails(1)" class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full z-10 hover:bg-black/70 transition-all"><i data-lucide="chevron-left" class="w-5 h-5"></i></button></div><span id="d-type-badge" class="absolute bottom-2 right-2 text-white px-3 py-1 rounded-lg text-[10px] font-black shadow-lg"></span></div><div class="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-900"><div id="publisher-bar" class="flex items-center gap-3 p-3 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 cursor-pointer transition-all shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700" onclick="openPublisherProfile()"><div id="d-pub-img-container" class="w-10 h-10 rounded-full border border-slate-300 overflow-hidden bg-slate-200 shrink-0"><img id="d-pub-img" src="" class="w-full h-full object-cover hidden"></div><div class="flex-1 truncate"><h4 id="d-pub-name" class="text-xs font-bold text-slate-800 dark:text-white leading-tight flex items-center gap-1"></h4><span class="text-[9px] text-emerald-600 dark:text-emerald-400 font-bold">عرض البروفايل</span></div><i data-lucide="chevron-left" class="w-4 h-4 text-slate-400"></i></div><div id="d-controls" class="hidden p-2 bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 w-full"></div><div class="p-3 space-y-3"><div class="space-y-1.5"><div><span class="text-[10px] font-bold text-slate-500 block mb-0.5">العنوان العقاري</span><h2 id="d-title" class="text-[15px] font-black text-slate-900 dark:text-white leading-tight"></h2></div><div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2 pt-1"><div><span class="text-[9px] font-bold text-slate-500 block mb-0">السعر المطلوب</span><span id="d-price" class="text-emerald-600 dark:text-emerald-400 font-black text-xl"></span></div><span id="d-time-badge" class="text-[9px] text-slate-700 dark:text-slate-300 font-bold bg-white dark:bg-slate-800 px-2.5 py-1.5 rounded border border-slate-200 dark:border-slate-700 shadow-sm"></span></div></div><div class="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden bg-white dark:bg-slate-800 shadow-sm"><table class="w-full text-[11px] modern-table"><tbody id="d-table-body"></tbody></table></div><div><h3 class="text-[12px] font-black text-slate-800 dark:text-white mb-2 flex items-center gap-1"><i data-lucide="sparkles" class="w-4 h-4 text-yellow-500"></i> المميزات الإضافية</h3><div id="d-amenities" class="grid grid-cols-3 gap-0 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden bg-white dark:bg-slate-800 shadow-sm"></div></div><div class="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm"><h3 class="text-[11px] font-black text-emerald-600 dark:text-emerald-400 uppercase mb-1.5 flex items-center gap-1"><i data-lucide="info" class="w-3.5 h-3.5"></i> التفاصيل الكاملة</h3><p id="d-desc" class="text-[12px] text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap font-medium"></p></div></div></div><div class="p-3 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex flex-col gap-2 shrink-0 pb-6 md:pb-3"><a id="d-map" href="#" target="_blank" class="hidden w-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 py-2.5 rounded-xl flex justify-center items-center gap-2 font-bold text-[11px] border border-blue-200 dark:border-blue-800 transition-all shadow-sm"><i data-lucide="map" class="w-4 h-4"></i> عرض الموقع على الخريطة</a><div class="flex gap-2"><a id="d-wa" href="#" target="_blank" class="flex-1 bg-[#25D366] text-white py-3 rounded-xl flex justify-center items-center gap-1.5 font-bold shadow-md hover:bg-green-600 transition-all text-[12px]"><i data-lucide="message-circle" class="w-4 h-4"></i> تواصل واتساب</a><a id="d-call" href="#" class="flex-1 bg-slate-800 dark:bg-slate-700 text-white py-3 rounded-xl flex justify-center items-center gap-1.5 font-bold shadow-md transition-all text-[12px] border dark:border-slate-600"><i data-lucide="phone" class="w-4 h-4"></i> اتصال مباشر</a></div></div></div></div>
+
+        <div id="add-modal" class="hidden modal-overlay"><div class="mobile-full-modal animate-pop"><div class="p-2.5 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-white dark:bg-slate-800 shrink-0"><h3 id="add-modal-title" class="font-bold text-slate-800 dark:text-white text-sm">إضافة عقار</h3><button onclick="toggleModal('add-modal')" class="bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-all shadow-sm"><i data-lucide="x" class="w-4 h-4"></i></button></div><div class="flex-1 overflow-y-auto p-2.5 bg-slate-50 dark:bg-slate-900"><div class="space-y-2.5"><div class="bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm"><label class="block text-[10px] font-bold text-slate-700 dark:text-slate-300 mb-1.5">صور وفيديوهات العقار (بحد أقصى 10)</label><div class="grid grid-cols-4 gap-1.5"><label class="aspect-square border-2 border-dashed border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-slate-900 rounded-lg flex flex-col items-center justify-center cursor-pointer transition-all text-emerald-600 dark:text-emerald-400 relative overflow-hidden"><input type="file" id="file-upload-input" multiple accept="image/*,video/*" onchange="handleUpload(this)" class="absolute inset-0 opacity-0 z-10"><i data-lucide="camera" class="w-4 h-4 mb-0.5"></i><span class="text-[8px] font-bold">إضافة</span></label><div id="preview-area" class="col-span-3 flex gap-1.5 overflow-x-auto no-scrollbar py-0.5"></div></div></div><div class="bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-1.5"><h4 class="text-[9px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 dark:border-slate-700 pb-0.5 mb-0.5">بيانات أساسية</h4><div class="flex gap-1.5"><div class="custom-select-wrapper flex-1"><select id="in-category" onchange="updateFormFields()" class="custom-select"><option value="apartment">شقة</option><option value="villa">فيلا</option><option value="chalet">شاليهات</option><option value="office">مكتب</option><option value="shop">محلات</option><option value="land">أراضي</option><option value="building">عماير</option><option value="warehouse">مخازن</option></select><i data-lucide="chevron-down" class="custom-select-icon w-3 h-3"></i></div><div class="custom-select-wrapper w-20 shrink-0"><select id="in-type" class="custom-select"><option value="sale">بيع</option><option value="rent">إيجار</option></select><i data-lucide="chevron-down" class="custom-select-icon w-3 h-3"></i></div></div><input id="in-title" class="input-box" placeholder="عنوان الإعلان"><input id="in-price" type="number" class="input-box" placeholder="السعر (جنيه)"><div class="grid grid-cols-2 gap-1.5"><input id="in-area" type="number" class="input-box" placeholder="المساحة (م²)"><input id="in-level" type="text" class="input-box" placeholder="الدور"><input id="in-floors-alt" type="number" class="input-box hidden" placeholder="عدد الأدوار"><div id="land-type-wrapper" class="hidden custom-select-wrapper"><select id="in-land-type" class="custom-select"><option value="building">مباني</option><option value="agriculture">زراعية</option></select><i data-lucide="chevron-down" class="custom-select-icon w-3 h-3"></i></div></div><div id="land-fields" class="hidden grid grid-cols-2 gap-1.5"><input id="in-feddan" type="number" class="input-box" placeholder="فدان (اختياري)"><input id="in-qirat" type="number" class="input-box" placeholder="قيراط (اختياري)"></div><div id="building-fields" class="hidden grid grid-cols-2 gap-1.5"><input id="in-apartments" type="number" class="input-box" placeholder="عدد الشقق"></div><div id="room-fields" class="grid grid-cols-2 gap-1.5"><input id="in-rooms" type="number" class="input-box" placeholder="عدد الغرف"><input id="in-baths" type="number" class="input-box" placeholder="عدد الحمامات"></div><div id="extra-fields" class="grid grid-cols-2 gap-1.5"><input id="in-balconies" type="number" class="input-box" placeholder="عدد البلكونات"><div class="custom-select-wrapper"><select id="in-finishing" class="custom-select"><option value="" disabled selected>نوع التشطيب</option><option value="red">طوب أحمر</option><option value="semi">نصف تشطيب</option><option value="full">تشطيب كامل</option><option value="super">سوبر لوكس</option><option value="ultra">الترا سوبر لوكس</option></select><i data-lucide="chevron-down" class="custom-select-icon w-3 h-3"></i></div></div><div id="furnished-field" class="flex items-center justify-between bg-slate-50 dark:bg-slate-900 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700"><span class="text-[10px] font-bold text-slate-600 dark:text-slate-300">مفروش؟</span><div class="flex gap-1.5"><label class="cursor-pointer"><input type="radio" name="furnished" id="furn-yes" value="yes" class="peer hidden"><span class="px-3 py-1 rounded text-[9px] font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 peer-checked:bg-emerald-500 peer-checked:text-white peer-checked:border-emerald-500 transition-all shadow-sm">نعم</span></label><label class="cursor-pointer"><input type="radio" name="furnished" id="furn-no" value="no" checked class="peer hidden"><span class="px-3 py-1 rounded text-[9px] font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 peer-checked:bg-slate-800 peer-checked:text-white peer-checked:border-slate-800 transition-all shadow-sm">لا</span></label></div></div></div><div class="bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-1.5"><h4 class="text-[9px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 dark:border-slate-700 pb-0.5 mb-0.5">المميزات</h4><div class="grid grid-cols-4 gap-1.5" id="amenities-grid"></div><textarea id="in-desc" rows="2" class="input-box resize-none" placeholder="وصف تفصيلي..."></textarea></div><div class="bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-1.5"><h4 class="text-[9px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 dark:border-slate-700 pb-0.5 mb-0.5">الموقع والتواصل</h4><input id="in-address" class="input-box mb-1.5" placeholder="العنوان بالتفصيل (اسم الشارع، علامة مميزة)..."><div class="grid grid-cols-2 gap-1.5"><div class="custom-select-wrapper"><select id="in-gov" onchange="populateCities('in-gov', 'in-city')" class="custom-select"><option value="" disabled selected>المحافظة</option></select><i data-lucide="chevron-down" class="custom-select-icon w-3 h-3"></i></div><div class="custom-select-wrapper"><select id="in-city" class="custom-select"><option value="" disabled selected>المركز/المدينة</option></select><i data-lucide="chevron-down" class="custom-select-icon w-3 h-3"></i></div></div><input id="in-map" class="input-box" placeholder="رابط جوجل ماب (اختياري)"><input id="in-phone" type="tel" class="input-box" placeholder="رقم الهاتف"></div></div></div><div class="p-2.5 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shrink-0 pb-6 md:pb-3"><button onclick="submitListing()" id="btn-publish" class="w-full bg-slate-800 dark:bg-emerald-600 text-white py-3 rounded-xl font-bold text-xs shadow-lg transition-all transform active:scale-95 border dark:border-emerald-500">نشر الإعلان</button></div></div></div>
+        <div id="chat-modal" class="hidden modal-overlay"><div class="mobile-full-modal animate-pop border dark:border-slate-700"><div class="bg-slate-800 dark:bg-emerald-600 p-3 text-white flex justify-between items-center shrink-0"><div class="flex items-center gap-2"><div class="bg-white/10 p-1.5 rounded-full"><i data-lucide="bot" class="w-5 h-5 text-yellow-400"></i></div><div><h4 class="font-bold text-xs">الدعم الفني</h4><span class="text-[9px] opacity-80">متصل الآن</span></div></div><button onclick="toggleChat()" class="bg-red-500 text-white p-1.5 rounded-full shadow-sm"><i data-lucide="x" class="w-4 h-4"></i></button></div><div id="chat-box" class="flex-1 bg-slate-50 dark:bg-slate-900 p-3 overflow-y-auto space-y-2 text-xs"></div><div class="p-3 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex items-center gap-2 shrink-0 pb-safe"><input id="chat-msg" type="text" class="flex-1 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-full px-4 py-2.5 text-sm outline-none dark:text-white font-bold" placeholder="اكتب رسالتك..."><button onclick="sendMsg()" class="w-10 h-10 bg-slate-800 dark:bg-emerald-600 rounded-full text-white flex items-center justify-center shadow-lg transition-all"><i data-lucide="send" class="w-4 h-4 ml-1"></i></button></div></div></div>
+        <div id="lightbox" class="hidden fixed inset-0 bg-black/95 z-[120] flex flex-col items-center justify-center select-none"><button onclick="closeLightbox()" class="absolute top-4 left-4 bg-white/20 text-white p-2.5 rounded-full z-20"><i data-lucide="x" class="w-6 h-6"></i></button><button onclick="changeLightboxImage(-1)" class="absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 text-white p-3 rounded-full z-20"><i data-lucide="chevron-right" class="w-6 h-6"></i></button><button onclick="changeLightboxImage(1)" class="absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 text-white p-3 rounded-full z-20"><i data-lucide="chevron-left" class="w-6 h-6"></i></button><div class="relative w-full h-full flex items-center justify-center"><img id="lightbox-img" src="" class="max-w-full max-h-[85vh] object-contain transition-opacity duration-100"></div></div>
+
+        <!-- Admin Panel -->
+        <div id="admin-panel" class="hidden fixed inset-0 bg-slate-900 z-[9999] flex flex-col text-white"><div class="p-3 border-b border-white/10 flex justify-between items-center bg-[#020617]"><h2 class="font-bold flex items-center gap-2 text-sm"><i data-lucide="shield" class="w-4 h-4 text-emerald-400"></i> لوحة التحكم</h2><div class="flex gap-3"><button onclick="refreshAdmin()"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button><button onclick="toggleAdminPanel()"><i data-lucide="x" class="w-5 h-5"></i></button></div></div><div class="flex-1 flex overflow-hidden"><div class="w-1/3 border-l border-white/10 bg-[#0f172a] overflow-y-auto p-2" id="admin-users-list"></div><div class="w-2/3 flex flex-col bg-slate-900 relative"><div class="bg-[#020617] border-b border-white/10 p-2 text-[10px]"><div class="flex gap-2 mb-1.5"><input id="admin-target-phone" placeholder="رقم هاتف المستخدم (مثال: 1206244875)" class="flex-1 bg-white/5 border border-white/20 rounded px-2 py-1.5 text-white outline-none"><button onclick="searchAdminUser()" class="bg-emerald-600 hover:bg-emerald-500 text-white rounded px-3 transition-all flex items-center justify-center"><i data-lucide="search" class="w-4 h-4"></i></button></div><div id="admin-search-result" class="text-[10px] text-slate-300 hidden mb-2 bg-white/5 p-2 rounded"></div><div class="flex gap-3 mb-2 text-white/90"><label class="cursor-pointer flex items-center gap-1 font-bold"><input type="radio" name="admin_role" value="verified" checked> توثيق</label><label class="cursor-pointer flex items-center gap-1 font-bold"><input type="radio" name="admin_role" value="isAdmin"> أدمن</label><label class="cursor-pointer flex items-center gap-1 font-bold text-red-400"><input type="radio" name="admin_role" value="isBlocked"> حظر</label></div><div class="flex gap-2"><button onclick="applyAdminAction(true)" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded py-1.5 font-bold transition-all">حفظ</button><button onclick="applyAdminAction(false)" class="flex-1 bg-red-600 hover:bg-red-500 text-white rounded py-1.5 font-bold transition-all">إلغاء</button></div></div><div id="admin-chat-header" class="h-10 border-b border-white/10 flex items-center justify-between px-3 bg-[#020617]"><span class="text-xs font-bold">اختر محادثة الدعم</span><button onclick="kickUser()" id="btn-end-chat" class="hidden bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded flex items-center gap-1"><i data-lucide="slash" class="w-3 h-3"></i> إنهاء</button></div><div id="admin-msg-area" class="flex-1 p-3 overflow-y-auto space-y-2 text-xs"></div><div class="p-2 border-t border-white/10 flex gap-2 bg-[#020617]"><input id="admin-input" class="flex-1 bg-white/5 border border-white/20 rounded px-3 py-1.5 text-xs text-white outline-none" placeholder="الرد..."><button onclick="sendAdminMsg()" class="bg-blue-600 px-4 py-1.5 rounded text-xs font-bold">إرسال</button></div></div></div></div>
+
+    </div>
+
+    <!-- استدعاء ملف الـ JS الخارجي -->
+    <script type="module" src="app.js"></script>
+</body>
+</html>
