@@ -269,18 +269,18 @@
             </div>
         </div>
 
-        <!-- Auth Modal تحول لصفحة كاملة -->
+        <!-- Auth Modal -->
         <div id="auth-modal" class="hidden modal-overlay !bg-slate-50 dark:!bg-slate-900 !p-0 !items-stretch !flex-col z-[150]">
-            <!-- Header -->
-            <div class="flex-shrink-0 flex items-center p-4 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm animate-pop" style="animation-duration: 0.1s;">
-                <button onclick="toggleModal('auth-modal')" class="p-2 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-white hover:bg-slate-200 transition-all">
-                    <i data-lucide="arrow-right" class="w-5 h-5"></i>
+            <!-- Header (مصغر) -->
+            <div class="flex-shrink-0 flex items-center py-2 px-3 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm h-12">
+                <button onclick="toggleModal('auth-modal')" class="p-1.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-white hover:bg-slate-200 transition-all">
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
                 </button>
-                <h2 class="flex-1 text-center text-sm font-black text-slate-800 dark:text-white ml-8">الحساب الشخصي</h2>
+                <h2 class="flex-1 text-center text-xs font-black text-slate-800 dark:text-white ml-6">الحساب الشخصي</h2>
             </div>
-            <!-- Body -->
-            <div class="flex-1 overflow-y-auto flex flex-col justify-center p-4 pb-20 animate-pop" style="animation-duration: 0.2s;">
-                <div class="w-full max-w-sm mx-auto bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-6">
+            <!-- Body (مرونة السكرول مع الكيبورد) -->
+            <div class="flex-1 overflow-y-auto p-4 pt-8 pb-[60vh] animate-pop" style="animation-duration: 0.2s;">
+                <div class="w-full max-w-sm mx-auto bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-5">
                     <div class="flex justify-center mb-5"><div class="w-14 h-14 bg-slate-50 dark:bg-slate-900 rounded-full flex items-center justify-center border-2 border-emerald-500 shadow-lg"><i data-lucide="building-2" class="w-7 h-7 text-emerald-600 dark:text-emerald-400"></i></div></div>
                     <div class="flex justify-center mb-5"><div class="bg-slate-100 dark:bg-slate-900 p-1 rounded-xl flex w-full border dark:border-slate-700"><button onclick="switchAuthMode('login')" id="tab-login" class="flex-1 py-1.5 rounded-lg text-xs font-bold transition-all bg-white dark:bg-slate-800 shadow text-emerald-600 dark:text-white border dark:border-slate-600">دخول</button><button onclick="switchAuthMode('register')" id="tab-register" class="flex-1 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-500 dark:text-slate-400">إنشاء حساب</button></div></div>
                     <div id="form-login" class="space-y-3"><div class="space-y-1"><label class="text-[9px] font-bold text-slate-500">رقم الهاتف</label><div class="relative"><span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs bg-slate-200 dark:bg-slate-900 px-1.5 rounded">+20</span><input id="login-phone" type="tel" class="input-box pl-12 text-left" placeholder="1xxxxxxxxx" oninput="formatPhone(this)"></div></div><div class="space-y-1"><label class="text-[9px] font-bold text-slate-500">كلمة المرور</label><input id="login-pass" type="password" class="input-box" placeholder="••••••••"></div><button id="btn-login" onclick="loginUser()" class="w-full bg-emerald-600 text-white py-2.5 rounded-xl font-bold text-xs shadow-md hover:bg-emerald-700 transition-all transform active:scale-95 mt-2">تسجيل الدخول</button></div>
@@ -305,6 +305,13 @@
     </div>
 
     <script type="module">
+        // حل مشكلة (Refresh): منع فتح النوافذ السابقة عند إعادة تحميل الصفحة
+        // نقوم بمسح سجلات الـ History الوهمية، إلا لو كان الرابط به تفاصيل عقار (?id=...)
+        const urlParamsInitial = new URLSearchParams(window.location.search);
+        if (!urlParamsInitial.has('id')) {
+            window.history.replaceState({view: 'home'}, '', window.location.pathname);
+        }
+
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInAnonymously, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, addDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
@@ -360,17 +367,21 @@
             if (!document.getElementById('lightbox').classList.contains('hidden')) {
                 closeLightbox(); return;
             }
+            
+            // إغلاق أي نافذة مفتوحة عند الضغط على زر الرجوع
             const openModals = Array.from(document.querySelectorAll('.modal-overlay:not(.hidden)'));
             if (openModals.length > 0) {
-                if(!document.getElementById('details-modal').classList.contains('hidden')) {
-                    closeDetails(true); 
-                } else {
-                    openModals.forEach(m => m.classList.add('hidden'));
-                    document.body.style.overflow = '';
+                openModals.forEach(m => {
+                    m.classList.add('hidden');
+                });
+                document.body.style.overflow = '';
+                if(state.activeDetailsId) {
+                    state.activeDetailsId = null;
                 }
                 return;
             }
-            if (document.getElementById('home-view').classList.contains('hidden')) {
+
+            if (e.state && e.state.view === 'home' || document.getElementById('home-view').classList.contains('hidden')) {
                 openHome(true); 
             }
         });
@@ -1033,7 +1044,10 @@
 
             if(document.querySelectorAll('.modal-overlay:not(.hidden)').length > 0) { 
                 document.body.style.overflow = 'hidden'; 
-                if(isOpening && !isHistoryBack && id !== 'details-modal') history.pushState({modal: id}, '', window.location.href);
+                // نغير History فقط لو كنا نفتح النافذة ولن نغيرها لو كنا نقوم بالإغلاق
+                if(isOpening && !isHistoryBack && id !== 'details-modal') {
+                    history.pushState({modal: id}, '', window.location.href);
+                }
             } else { 
                 document.body.style.overflow = ''; 
             } 
